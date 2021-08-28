@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart Beat Check</title>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
+    <script>
+        function checkHeartBeat() {
+            $.get("/api/are-u-ok", (data, status) => {
+                console.log("CHECKING: ", status)
+                let pluralSuffix;
+                if (status === "success") {
+                    pluralSuffix = "s"
+                    if (data.times.toString() === "1") {
+                        pluralSuffix = ""
+                    }
+                    $("#status-report").html(`Yes Yes... I'm ${data.status}. ` +
+                        `Those nerds have already asked me ${data.times} time${pluralSuffix}!`)
+                }
+            })
+        }
+
+        checkHeartBeat();
+    </script>
+</head>
+<body>
+<h1 id="status-report"></h1>
+</body>
+</html>
