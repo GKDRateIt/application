@@ -12,6 +12,7 @@ class ApiServer {
 
     private val handlers = arrayOf(
         HeartbeatHandler(),
+        TeacherHandler(),
     )
 
     fun start() {

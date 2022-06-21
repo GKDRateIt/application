@@ -13,6 +13,8 @@ repositories {
     mavenLocal()
 }
 
+val exposedVersion: String by project
+
 dependencies {
     // kotlin coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
@@ -20,9 +22,14 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.36")
     // kotlin serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-
     // https://mvnrepository.com/artifact/io.javalin/javalin
     implementation("io.javalin:javalin:4.6.1")
+    // kotlin orm
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    // pgjdbc-ng driver
+    implementation("org.postgresql:postgresql:42.3.6")
 
     testImplementation(kotlin("test"))
 }

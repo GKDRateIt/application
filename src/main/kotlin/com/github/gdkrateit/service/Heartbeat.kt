@@ -4,9 +4,12 @@ import io.javalin.http.Context
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HeartbeatData(val status: String) {
+data class HeartbeatResponse(
+    override val status: ResponseStatus,
+    override val detail: String
+) : ApiResponseBase() {
     companion object {
-        val HEALTHY = HeartbeatData("healthy")
+        val HEALTHY = HeartbeatResponse(ResponseStatus.SUCCESS, "Nothing special")
     }
 }
 
@@ -17,6 +20,6 @@ class HeartbeatHandler : ApiBase() {
         get() = "/heartbeat"
 
     override fun handle(ctx: Context) {
-        ctx.kotlinxJson(HeartbeatData.HEALTHY)
+        ctx.kotlinxJson(HeartbeatResponse.HEALTHY)
     }
 }
