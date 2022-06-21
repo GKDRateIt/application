@@ -42,7 +42,7 @@ class TeacherHandler : ApiBase() {
                 val name = ctx.formParam("name")
                 val email = ctx.formParam("email")
                 if (name == null && email == null) {
-                    ctx.illegalParam(listOf("name", "email"), "")
+                    ctx.illegalParam(listOf("name", "email"), "One of them must be non-null.")
                 }
                 val selected = if (name != null) {
                     Teacher.find {
