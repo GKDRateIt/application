@@ -8,24 +8,22 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
 
 @Serializable
-data class TeacherModel(
-    val name: String,
-    val email: String,
-)
+sealed interface TeacherModel {
+    var name: String
+    var email: String?
+}
+
+//object TeacherModelSerializer : TeacherModel
 
 object Teachers : IntIdTable(columnName = "t_teacher_id") {
     val name: Column<String> = varchar("c_teacher_name", 50)
-    val email: Column<String> = varchar("c_teacher_email", 70)
+    val email: Column<String?> = varchar("c_teacher_email", 70).nullable()
 }
 
 // DAO class
-class Teacher(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<Teacher>(Teachers)
+class TeacherDao(id: EntityID<Int>) : IntEntity(id), TeacherModel {
+    companion object : IntEntityClass<TeacherDao>(Teachers)
 
-    var name by Teachers.name
-    var email by Teachers.email
-
-    fun toModel(): TeacherModel {
-        return TeacherModel(name, email)
-    }
+    override var name by Teachers.name
+    override var email by Teachers.email
 }

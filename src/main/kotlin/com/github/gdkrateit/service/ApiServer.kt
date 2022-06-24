@@ -10,9 +10,11 @@ import io.javalin.apibuilder.ApiBuilder.post
 class ApiServer {
     private val app = Javalin.create()
 
-    private val handlers = arrayOf(
-        HeartbeatHandler(),
+    private val handlers = listOf(
+        CourseHandler(),
+        ReviewHandler(),
         TeacherHandler(),
+        UserHandler(),
     )
 
     fun start() {

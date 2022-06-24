@@ -32,38 +32,31 @@ enum class CrudVerb {
 }
 
 @Serializable
-abstract class ApiResponseBase {
-    abstract val status: ResponseStatus
-    abstract val detail: String
-
+class ApiResponse<T>(
+    val status: ResponseStatus,
+    val detail: String,
+    val data: T?,
+) {
     companion object {
-        val NotImplemented = object : ApiResponseBase() {
-            override val status: ResponseStatus
-                get() = ResponseStatus.FAIL
-            override val detail: String
-                get() = "This API is not implemented yet"
+        val NotImplementedError = ApiResponse<Any>(ResponseStatus.FAIL, "Not Implemented yet.", null)
 
-        }
-
-        fun illegalParam(
+        fun illegalParamError(
             illegalParamNames: Collection<String>,
             extraInfo: String = ""
-        ): ApiResponseBase {
-            return object : ApiResponseBase() {
-                override val status: ResponseStatus
-                    get() = ResponseStatus.FAIL
-                override val detail: String
-                    get() = run {
-                        val sb = StringBuilder()
-                        sb.append("Illegal parameter names: ")
-                        illegalParamNames.forEach {
-                            sb.append("$it ")
-                        }
-                        sb.append('.')
-                        sb.append(extraInfo)
-                        sb.toString()
-                    }
+        ): ApiResponse<Any> {
+            val sb = StringBuilder()
+            sb.append("Illegal parameter names: ")
+            illegalParamNames.forEach {
+                sb.append("$it ")
             }
+            sb.append('.')
+            sb.append(extraInfo)
+            val detail = sb.toString()
+            return ApiResponse(ResponseStatus.FAIL, detail, null)
+        }
+
+        inline fun <reified T> success(replyData: T?, detail: String = ""): ApiResponse<T> {
+            return ApiResponse(ResponseStatus.SUCCESS, detail, replyData)
         }
     }
 }
@@ -83,21 +76,53 @@ abstract class ApiBase {
         this.result(Json.encodeToString(obj))
     }
 
-    fun Context.notImplemented() {
-        this.kotlinxJson(ApiResponseBase.NotImplemented)
+    fun Context.notImplementedError() {
+        this.kotlinxJson(ApiResponse.NotImplementedError)
     }
 
-    fun Context.illegalParam(
+    fun Context.illegalParamError(
         illegalParamNames: Collection<String>,
         extraInfo: String = ""
     ) {
-        this.kotlinxJson(ApiResponseBase.illegalParam(illegalParamNames, extraInfo))
+        this.kotlinxJson(ApiResponse.illegalParamError(illegalParamNames, extraInfo))
     }
 
-    fun Context.illegalParam(
+    fun Context.illegalParamError(
         illegalParamName: String,
         extraInfo: String = ""
     ) {
-        this.kotlinxJson(ApiResponseBase.illegalParam(listOf(illegalParamName), extraInfo))
+        this.kotlinxJson(ApiResponse.illegalParamError(listOf(illegalParamName), extraInfo))
+    }
+
+    inline fun <reified T> Context.successReply(data: T, detail: String = "") {
+        this.kotlinxJson(ApiResponse.success(replyData = data, detail = detail))
+    }
+}
+
+abstract class CrudApiBase : ApiBase() {
+    override val method: HttpMethod
+        get() = HttpMethod.POST
+
+    abstract fun handleCreate(ctx: Context)
+    abstract fun handleRead(ctx: Context)
+    abstract fun handleUpdate(ctx: Context)
+    abstract fun handleDelete(ctx: Context)
+
+    override fun handle(ctx: Context) {
+        val actionRaw = ctx.formParam("action")
+        if (actionRaw == null) {
+            ctx.illegalParamError("action", "missing this parameter.")
+            return
+        }
+        when (actionRaw.uppercase()) {
+            "CREATE" -> handleCreate(ctx)
+            "READ" -> handleRead(ctx)
+            "UPDATE" -> handleUpdate(ctx)
+            "DELETE" -> handleDelete(ctx)
+            else -> ctx.illegalParamError(
+                "action",
+                "Argument action must be one of create/read/update/delete"
+            )
+        }
     }
 }
