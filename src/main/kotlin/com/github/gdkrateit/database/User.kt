@@ -14,7 +14,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 @Serializable
 @SerialName("User")
-sealed interface UserModel {
+private sealed interface UserModel {
     val email: String
     val hashedPassword: String
     val nickname: String
