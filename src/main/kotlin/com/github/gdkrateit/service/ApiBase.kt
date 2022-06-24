@@ -36,30 +36,7 @@ class ApiResponse<T>(
     val status: ResponseStatus,
     val detail: String,
     val data: T?,
-) {
-    companion object {
-        val NotImplementedError = ApiResponse<Any>(ResponseStatus.FAIL, "Not Implemented yet.", null)
-
-        fun illegalParamError(
-            illegalParamNames: Collection<String>,
-            extraInfo: String = ""
-        ): ApiResponse<Any> {
-            val sb = StringBuilder()
-            sb.append("Illegal parameter names: ")
-            illegalParamNames.forEach {
-                sb.append("$it ")
-            }
-            sb.append('.')
-            sb.append(extraInfo)
-            val detail = sb.toString()
-            return ApiResponse(ResponseStatus.FAIL, detail, null)
-        }
-
-        inline fun <reified T> success(replyData: T?, detail: String = ""): ApiResponse<T> {
-            return ApiResponse(ResponseStatus.SUCCESS, detail, replyData)
-        }
-    }
-}
+)
 
 abstract class ApiBase {
     abstract val method: HttpMethod
@@ -77,25 +54,34 @@ abstract class ApiBase {
     }
 
     fun Context.notImplementedError() {
-        this.kotlinxJson(ApiResponse.NotImplementedError)
+        this.kotlinxJson(ApiResponse<Any>(ResponseStatus.FAIL, "Not Implemented yet.", null))
     }
 
     fun Context.illegalParamError(
-        illegalParamNames: Collection<String>,
+        illegalParamNames: List<String>,
         extraInfo: String = ""
     ) {
-        this.kotlinxJson(ApiResponse.illegalParamError(illegalParamNames, extraInfo))
+        val sb = StringBuilder()
+        sb.append("Illegal parameter names: ")
+        illegalParamNames.forEach {
+            sb.append("$it ")
+        }
+        sb.append('.')
+        sb.append(extraInfo)
+        val detail = sb.toString()
+        val response = ApiResponse(ResponseStatus.FAIL, detail, null)
+        this.kotlinxJson(response)
     }
 
     fun Context.illegalParamError(
         illegalParamName: String,
         extraInfo: String = ""
     ) {
-        this.kotlinxJson(ApiResponse.illegalParamError(listOf(illegalParamName), extraInfo))
+        this.illegalParamError(listOf(illegalParamName), extraInfo)
     }
 
     inline fun <reified T> Context.successReply(data: T, detail: String = "") {
-        this.kotlinxJson(ApiResponse.success(replyData = data, detail = detail))
+        this.kotlinxJson(ApiResponse(ResponseStatus.SUCCESS, detail, data))
     }
 }
 
