@@ -1,6 +1,12 @@
 package com.github.gdkrateit.database
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -8,7 +14,8 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import java.math.BigDecimal
 
 @Serializable
-sealed interface CourseModel {
+@SerialName("Course")
+private sealed interface CourseModel {
     var code: String
     var codeSeq: String
     var name: String
@@ -18,8 +25,24 @@ sealed interface CourseModel {
     var degree: Int
 }
 
+@OptIn(ExperimentalSerializationApi::class)
+private class CourseSerializer : KSerializer<Course> {
+    private val delegatedSerializer = CourseModel.serializer()
 
-object CourseTable : IntIdTable(columnName = "c_course_id") {
+    override val descriptor: SerialDescriptor
+        get() = SerialDescriptor("Teacher", delegatedSerializer.descriptor)
+
+    override fun deserialize(decoder: Decoder): Course {
+        throw IllegalStateException("Database entity should not be deserialized.")
+    }
+
+    override fun serialize(encoder: Encoder, value: Course) {
+        encoder.encodeSerializableValue(delegatedSerializer, value)
+    }
+}
+
+
+object Courses : IntIdTable(columnName = "c_course_id") {
     val code = char("c_course_name", 9)
     val codeSeq = varchar("c_course_code_seq", 5)
     val name = varchar("c_course_name", 30)
@@ -33,14 +56,15 @@ object CourseTable : IntIdTable(columnName = "c_course_id") {
     }
 }
 
-class CourseDao(id: EntityID<Int>) : IntEntity(id), CourseModel {
-    companion object : IntEntityClass<CourseDao>(CourseTable)
+@Serializable(with = CourseSerializer::class)
+class Course(id: EntityID<Int>) : IntEntity(id), CourseModel {
+    companion object : IntEntityClass<Course>(Courses)
 
-    override var code by CourseTable.code
-    override var codeSeq by CourseTable.codeSeq
-    override var name by CourseTable.name
-    override var teacherId by CourseTable.teacherId
-    override var semester by CourseTable.semester
-    override var credit by CourseTable.credit
-    override var degree by CourseTable.degree
+    override var code by Courses.code
+    override var codeSeq by Courses.codeSeq
+    override var name by Courses.name
+    override var teacherId by Courses.teacherId
+    override var semester by Courses.semester
+    override var credit by Courses.credit
+    override var degree by Courses.degree
 }

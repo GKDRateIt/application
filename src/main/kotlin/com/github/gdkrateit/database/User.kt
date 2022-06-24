@@ -1,12 +1,19 @@
 package com.github.gdkrateit.database
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 @Serializable
+@SerialName("User")
 sealed interface UserModel {
     val email: String
     val hashedPassword: String
@@ -15,7 +22,23 @@ sealed interface UserModel {
     val userGroup: String
 }
 
-object UserTable : IntIdTable(columnName = "u_user_id") {
+@OptIn(ExperimentalSerializationApi::class)
+private class UserSerializer : KSerializer<User> {
+    private val delegatedSerializer = UserModel.serializer()
+
+    override val descriptor: SerialDescriptor
+        get() = SerialDescriptor("Teacher", delegatedSerializer.descriptor)
+
+    override fun deserialize(decoder: Decoder): User {
+        throw IllegalStateException("Database entity should not be deserialized.")
+    }
+
+    override fun serialize(encoder: Encoder, value: User) {
+        encoder.encodeSerializableValue(delegatedSerializer, value)
+    }
+}
+
+object Users : IntIdTable(columnName = "u_user_id") {
     val email = varchar("u_user_email", 70).uniqueIndex()
     val hashedPassword = varchar("u_user_hashed_passwd", 256)
     val nickname = varchar("u_user_nickname", 20)
@@ -23,12 +46,13 @@ object UserTable : IntIdTable(columnName = "u_user_id") {
     val userGroup = varchar("u_user_group", 20)
 }
 
-class UserDao(id: EntityID<Int>) : IntEntity(id), UserModel {
-    companion object : IntEntityClass<UserDao>(UserTable)
+@Serializable(with = UserSerializer::class)
+class User(id: EntityID<Int>) : IntEntity(id), UserModel {
+    companion object : IntEntityClass<User>(Users)
 
-    override var email by UserTable.email
-    override var hashedPassword by UserTable.hashedPassword
-    override var nickname by UserTable.nickname
-    override var startYear by UserTable.startYear
-    override var userGroup by UserTable.userGroup
+    override var email by Users.email
+    override var hashedPassword by Users.hashedPassword
+    override var nickname by Users.nickname
+    override var startYear by Users.startYear
+    override var userGroup by Users.userGroup
 }

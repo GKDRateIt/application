@@ -1,4 +1,4 @@
-import com.github.gdkrateit.database.TeacherDao
+import com.github.gdkrateit.database.Teacher
 import com.github.gdkrateit.database.Teachers
 import com.github.gdkrateit.service.ApiServer
 import kotlinx.coroutines.launch
@@ -36,17 +36,17 @@ fun main(args: Array<String>) = runBlocking {
         }
 
         // DAO api
-        val noLp = TeacherDao.find {
+        val noLp = Teacher.find {
             (Teachers.email eq """lp@ict.ac.cn""") and (Teachers.name eq "LP")
         }.empty()
         if (noLp) {
-            TeacherDao.new {
+            Teacher.new {
                 name = "LP"
                 email = "lp@ict.ac.cn"
             }
         }
 
-        TeacherDao.find { Teachers.email match """_%@ict\.ac\.cn""" }.forEach {
+        Teacher.find { Teachers.email match """_%@ict\.ac\.cn""" }.forEach {
             logger.info(it.name)
         }
     }

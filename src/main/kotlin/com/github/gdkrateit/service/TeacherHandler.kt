@@ -1,6 +1,6 @@
 package com.github.gdkrateit.service
 
-import com.github.gdkrateit.database.TeacherDao
+import com.github.gdkrateit.database.Teacher
 import com.github.gdkrateit.database.Teachers
 import io.javalin.http.Context
 
@@ -23,11 +23,11 @@ class TeacherHandler : CrudApiBase() {
             )
         }
         val selected = if (name != null) {
-            TeacherDao.find {
+            Teacher.find {
                 Teachers.name eq name
             }
         } else {
-            TeacherDao.find {
+            Teacher.find {
                 // The `expr!!` throws exception if `expr` is null.
                 // And automatically cast it to the non-null version.
                 // But here it won't be null.
