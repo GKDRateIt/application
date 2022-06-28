@@ -17,7 +17,7 @@ import java.math.BigDecimal
 @SerialName("Course")
 private sealed interface CourseModel {
     var code: String
-    var codeSeq: String
+    var codeSeq: String?
     var name: String
     var teacherId: Int
     var semester: String
@@ -44,7 +44,7 @@ private class CourseSerializer : KSerializer<Course> {
 
 object Courses : IntIdTable(columnName = "c_course_id") {
     val code = char("c_course_name", 9)
-    val codeSeq = varchar("c_course_code_seq", 5)
+    val codeSeq = varchar("c_course_code_seq", 5).nullable()
     val name = varchar("c_course_name", 30)
     val teacherId = integer("c_teacher_id").references(Teachers.id)
     val semester = varchar("c_semester", 10)

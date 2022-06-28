@@ -3,6 +3,8 @@ package com.github.gdkrateit.service
 import com.github.gdkrateit.database.Teacher
 import com.github.gdkrateit.database.Teachers
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.Base64
 
 
 class TeacherHandler : CrudApiBase() {
@@ -10,7 +12,30 @@ class TeacherHandler : CrudApiBase() {
         get() = "/teacher"
 
     override fun handleCreate(ctx: Context) {
-        ctx.notImplementedError()
+        if (ctx.formParam("name") == null) {
+            ctx.missingParamError("name")
+            return
+        }
+
+        try {
+            base64Decoder.decode(ctx.formParam("email")!!)
+        } catch (e: IllegalArgumentException) {
+            ctx.base64Error("name")
+            return
+        }
+
+        try {
+            // Q: should I check if it repeats manually?
+            transaction {
+                Teacher.new {
+                    name = ctx.formParam("name")!!
+                    email = ctx.formParam("email")
+                }
+            }
+            ctx.success()
+        } catch (e: Throwable) {
+            ctx.databaseError()
+        }
     }
 
     override fun handleRead(ctx: Context) {
@@ -21,17 +46,17 @@ class TeacherHandler : CrudApiBase() {
                 illegalParamNames = listOf("name", "email"),
                 extraInfo = "One of them must be non-null."
             )
+            return
         }
         val selected = if (name != null) {
+            val nameDec = base64Decoder.decode(name).toString()
             Teacher.find {
-                Teachers.name eq name
+                Teachers.name eq nameDec
             }
         } else {
+            val emailDec = base64Decoder.decode(email!!).toString()
             Teacher.find {
-                // The `expr!!` throws exception if `expr` is null.
-                // And automatically cast it to the non-null version.
-                // But here it won't be null.
-                Teachers.email eq email!!
+                Teachers.email eq emailDec
             }
         }.toList()
         ctx.successReply(selected)

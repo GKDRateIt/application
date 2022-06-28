@@ -19,7 +19,7 @@ private sealed interface UserModel {
     val hashedPassword: String
     val nickname: String
     val startYear: String
-    val userGroup: String
+    val group: String
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -43,7 +43,7 @@ object Users : IntIdTable(columnName = "u_user_id") {
     val hashedPassword = varchar("u_user_hashed_passwd", 256)
     val nickname = varchar("u_user_nickname", 20)
     val startYear = varchar("u_user_start_year", 10)
-    val userGroup = varchar("u_user_group", 20)
+    val group = varchar("u_user_group", 20)
 }
 
 @Serializable(with = UserSerializer::class)
@@ -54,5 +54,5 @@ class User(id: EntityID<Int>) : IntEntity(id), UserModel {
     override var hashedPassword by Users.hashedPassword
     override var nickname by Users.nickname
     override var startYear by Users.startYear
-    override var userGroup by Users.userGroup
+    override var group by Users.group
 }

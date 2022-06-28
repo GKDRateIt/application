@@ -31,8 +31,8 @@ private sealed interface ReviewModel {
     val difficulty: Int
     val workload: Int
     val commentText: String
-    val myGrade: String
-    val myMajor: Int
+    val myGrade: String?
+    val myMajor: Int?
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -61,8 +61,8 @@ object Reviews : IntIdTable(columnName = "r_review_id") {
     val difficulty = integer("r_rate_difficulty")
     val workload = integer("r_rate_workload")
     val commentText = text("r_comment_text")
-    val myGrade = varchar("r_my_grade", 10)
-    val myMajor = integer("r_my_major")
+    val myGrade = varchar("r_my_grade", 10).nullable()
+    val myMajor = integer("r_my_major").nullable()
 }
 
 @Serializable(with = ReviewSerializer::class)

@@ -5,6 +5,7 @@ import io.javalin.http.Context
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.*
 
 @Serializable
 enum class HttpMethod {
@@ -80,14 +81,41 @@ abstract class ApiBase {
         this.illegalParamError(listOf(illegalParamName), extraInfo)
     }
 
+    fun Context.missingParamError(name: String) {
+        this.illegalParamError(name, "Must provide parameter `$name`.")
+    }
+
+    fun Context.base64Error(name: String) {
+        this.illegalParamError(name, "Parameter `$name` must be a valid base64 string.")
+    }
+
+    fun Context.base64Error(name: List<String>) {
+        val sb = StringBuilder()
+        sb.append("Parameters in `")
+        name.forEach { sb.append("$it, ") }
+        sb.append("` must be valid base64 strings.")
+        this.illegalParamError(name, extraInfo = sb.toString())
+    }
+
+    fun Context.success(detail: String = "") {
+        this.kotlinxJson(ApiResponse(ResponseStatus.SUCCESS, detail, null))
+    }
+
     inline fun <reified T> Context.successReply(data: T, detail: String = "") {
         this.kotlinxJson(ApiResponse(ResponseStatus.SUCCESS, detail, data))
+    }
+
+    fun Context.databaseError(detail: String = "") {
+        this.kotlinxJson(ApiResponse(ResponseStatus.FAIL, detail, null))
     }
 }
 
 abstract class CrudApiBase : ApiBase() {
     override val method: HttpMethod
         get() = HttpMethod.POST
+
+    protected val base64Decoder: Base64.Decoder = Base64.getDecoder()
+    protected val base64Encoder: Base64.Encoder = Base64.getEncoder()
 
     abstract fun handleCreate(ctx: Context)
     abstract fun handleRead(ctx: Context)
