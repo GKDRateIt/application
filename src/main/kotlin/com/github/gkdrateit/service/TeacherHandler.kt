@@ -1,10 +1,9 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
-import com.github.gdkrateit.database.Teacher
-import com.github.gdkrateit.database.Teachers
+import com.github.gkdrateit.database.Teacher
+import com.github.gkdrateit.database.Teachers
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.Base64
 
 
 class TeacherHandler : CrudApiBase() {

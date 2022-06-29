@@ -1,10 +1,11 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
 import io.javalin.http.ContentType
 import io.javalin.http.Context
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import java.util.*
 
 @Serializable
@@ -44,6 +45,8 @@ abstract class ApiBase {
     abstract val path: String
     abstract fun handle(ctx: Context)
 
+    protected val logger = LoggerFactory.getLogger("")
+
     /**
      * Reply [obj] in JSON format.
      * This is a special extension function which uses kotlinx
@@ -70,7 +73,7 @@ abstract class ApiBase {
         sb.append('.')
         sb.append(extraInfo)
         val detail = sb.toString()
-        val response = ApiResponse(ResponseStatus.FAIL, detail, null)
+        val response = ApiResponse<String>(ResponseStatus.FAIL, detail, null)
         this.kotlinxJson(response)
     }
 
@@ -98,7 +101,7 @@ abstract class ApiBase {
     }
 
     fun Context.success(detail: String = "") {
-        this.kotlinxJson(ApiResponse(ResponseStatus.SUCCESS, detail, null))
+        this.kotlinxJson(ApiResponse<String>(ResponseStatus.SUCCESS, detail, null))
     }
 
     inline fun <reified T> Context.successReply(data: T, detail: String = "") {
@@ -106,7 +109,7 @@ abstract class ApiBase {
     }
 
     fun Context.databaseError(detail: String = "") {
-        this.kotlinxJson(ApiResponse(ResponseStatus.FAIL, detail, null))
+        this.kotlinxJson(ApiResponse<String>(ResponseStatus.FAIL, detail, null))
     }
 }
 
@@ -123,9 +126,10 @@ abstract class CrudApiBase : ApiBase() {
     abstract fun handleDelete(ctx: Context)
 
     override fun handle(ctx: Context) {
+        logger.info("Received request from ${ctx.req.remoteAddr}:${ctx.req.remotePort}")
         val actionRaw = ctx.formParam("action")
         if (actionRaw == null) {
-            ctx.illegalParamError("action", "missing this parameter.")
+            ctx.missingParamError("action")
             return
         }
         when (actionRaw.uppercase()) {

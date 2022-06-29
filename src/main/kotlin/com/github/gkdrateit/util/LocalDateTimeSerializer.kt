@@ -1,4 +1,4 @@
-package com.github.gdkrateit.util
+package com.github.gkdrateit.util
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

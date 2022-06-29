@@ -1,6 +1,6 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
-import com.github.gdkrateit.database.User
+import com.github.gkdrateit.database.User
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 

@@ -1,6 +1,6 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
-import com.github.gdkrateit.database.Review
+import com.github.gkdrateit.database.Review
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime

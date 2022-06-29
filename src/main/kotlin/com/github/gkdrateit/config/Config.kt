@@ -1,4 +1,4 @@
-package com.github.gdkrateit.config
+package com.github.gkdrateit.config
 
 object Config {
     val port: Int by lazy {

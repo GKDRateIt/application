@@ -1,6 +1,6 @@
-package com.github.gdkrateit.database
+package com.github.gkdrateit.database
 
-import com.github.gdkrateit.util.LocalDateTimeSerializer
+import com.github.gkdrateit.util.LocalDateTimeSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName

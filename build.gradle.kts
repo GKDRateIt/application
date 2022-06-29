@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "1.7.0"
@@ -32,7 +33,11 @@ dependencies {
     // pgjdbc-ng driver
     implementation("org.postgresql:postgresql:42.3.6")
 
+
     testImplementation(kotlin("test"))
+    testImplementation("io.javalin:javalin-testtools:4.6.1")
+    // javalin json mapper fallback
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
 }
 
 tasks.test {

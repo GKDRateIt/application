@@ -1,6 +1,6 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
-import com.github.gdkrateit.database.Course
+import com.github.gkdrateit.database.Course
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -10,7 +10,7 @@ class CourseHandler : CrudApiBase() {
 
 
     override fun handleCreate(ctx: Context) {
-        arrayOf("id", "code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
+        arrayOf("code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
             if (ctx.formParam(key) == null) {
                 ctx.missingParamError(key)
                 return

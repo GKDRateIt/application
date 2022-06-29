@@ -1,14 +1,15 @@
-package com.github.gdkrateit.service
+package com.github.gkdrateit.service
 
-import com.github.gdkrateit.config.Config
+import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.database.DbAdapter
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.post
-
+import org.slf4j.LoggerFactory
 
 class ApiServer {
-    private val app = Javalin.create()
+    val app: Javalin = Javalin.create()
 
     private val handlers = listOf(
         CourseHandler(),
@@ -17,7 +18,8 @@ class ApiServer {
         UserHandler(),
     )
 
-    fun start() {
+    init {
+        DbAdapter.connect()
         app.routes {
             ApiBuilder.path("/api") {
                 handlers.forEach {
@@ -32,10 +34,13 @@ class ApiServer {
                 }
             }
         }
+    }
+
+    fun start() {
         app.start(Config.port)
     }
 
-    fun stop() {
+    fun close() {
         app.close()
     }
 }

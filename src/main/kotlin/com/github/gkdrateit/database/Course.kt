@@ -1,4 +1,4 @@
-package com.github.gdkrateit.database
+package com.github.gkdrateit.database
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -43,7 +43,7 @@ private class CourseSerializer : KSerializer<Course> {
 
 
 object Courses : IntIdTable(columnName = "c_course_id") {
-    val code = char("c_course_name", 9)
+    val code = char("c_course_code", 9)
     val codeSeq = varchar("c_course_code_seq", 5).nullable()
     val name = varchar("c_course_name", 30)
     val teacherId = integer("c_teacher_id").references(Teachers.id)

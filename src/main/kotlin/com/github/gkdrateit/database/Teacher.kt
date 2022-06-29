@@ -1,4 +1,4 @@
-package com.github.gdkrateit.database
+package com.github.gkdrateit.database
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
