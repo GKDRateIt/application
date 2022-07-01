@@ -49,13 +49,17 @@ class TeacherHandler : CrudApiBase() {
         }
         val selected = if (name != null) {
             val nameDec = base64Decoder.decode(name).toString()
-            Teacher.find {
-                Teachers.name eq nameDec
+            transaction {
+                Teacher.find {
+                    Teachers.name eq nameDec
+                }
             }
         } else {
             val emailDec = base64Decoder.decode(email!!).toString()
-            Teacher.find {
-                Teachers.email eq emailDec
+            transaction {
+                Teacher.find {
+                    Teachers.email eq emailDec
+                }
             }
         }.toList()
         ctx.successReply(selected)
