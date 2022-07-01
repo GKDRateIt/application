@@ -42,6 +42,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }
 
 tasks.withType<KotlinCompile> {

@@ -51,6 +51,7 @@ class ReviewHandler : CrudApiBase() {
                     lastUpdateTime = ctx.formParam("lastUpdateTime")!!.toLong().let {
                         LocalDateTime.ofEpochSecond(it, 0, zoneOffset)
                     }
+                    overallRecommendation = ctx.formParam("overallRecommendation")!!.toInt()
                     quality = ctx.formParam("quality")!!.toInt()
                     difficulty = ctx.formParam("difficulty")!!.toInt()
                     workload = ctx.formParam("workload")!!.toInt()

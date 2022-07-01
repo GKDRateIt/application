@@ -18,8 +18,8 @@ internal class CourseApiTest {
 
     @Test
     fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
-        transaction {
-            if (Teacher.find { Teachers.id greaterEq 0 }.empty()) {
+        if (transaction { Teacher.find { Teachers.id greaterEq 0 }.empty() }) {
+            transaction {
                 Teacher.new {
                     name = "TestTeacher"
                     email = "test_teacher@ucas.ac.cn"

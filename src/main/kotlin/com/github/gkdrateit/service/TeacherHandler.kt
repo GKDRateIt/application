@@ -17,7 +17,7 @@ class TeacherHandler : CrudApiBase() {
         }
 
         try {
-            base64Decoder.decode(ctx.formParam("email")!!)
+            base64Decoder.decode(ctx.formParam("name")!!)
         } catch (e: IllegalArgumentException) {
             ctx.base64Error("name")
             return

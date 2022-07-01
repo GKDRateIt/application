@@ -1,7 +1,6 @@
 import com.github.gkdrateit.service.ApiServer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.Database
 import org.slf4j.LoggerFactory
 
 fun main(args: Array<String>) = runBlocking {
