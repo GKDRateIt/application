@@ -18,7 +18,7 @@ internal class CourseApiTest {
 
     @Test
     fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
-        if (transaction { Teacher.find { Teachers.id greaterEq 0 }.empty() }) {
+        if (transaction { Teacher.all().empty() }) {
             transaction {
                 Teacher.new {
                     name = "TestTeacher"
@@ -26,13 +26,18 @@ internal class CourseApiTest {
                 }
             }
         }
+        val teacherId = transaction { Teacher.all().first().id.value }
         // TODO: query before create
+        val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        val randStr = (1..9)
+            .map { allowedChars.random() }
+            .joinToString("")
         val formBody = FormBody.Builder()
-            .add("action", "create")
-            .add("code", "B01GB001Y")
+            .add("_action", "create")
+            .add("code", randStr)
             .add("codeSeq", "A")
             .add("name", Base64.getEncoder().encodeToString("随便咯".toByteArray()))
-            .add("teacherId", "1")
+            .add("teacherId", teacherId.toString())
             .add("semester", "spring")
             .add("credit", BigDecimal.valueOf(1.5).toString())
             .add("degree", "0")

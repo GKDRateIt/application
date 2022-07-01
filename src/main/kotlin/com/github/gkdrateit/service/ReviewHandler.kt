@@ -62,7 +62,7 @@ class ReviewHandler : CrudApiBase() {
             }
             ctx.success()
         } catch (e: Throwable) {
-            ctx.databaseError()
+            ctx.databaseError(e.message ?: "")
         }
     }
 

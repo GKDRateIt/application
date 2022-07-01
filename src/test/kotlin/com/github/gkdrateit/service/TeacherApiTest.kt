@@ -16,7 +16,7 @@ internal class TeacherApiTest {
     fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
         // TODO: query before create
         val formBody = FormBody.Builder()
-            .add("action", "create")
+            .add("_action", "create")
             .add("name", Base64.getEncoder().encodeToString("好老师".toByteArray()))
             .add("email", "test@ucas.ac.cn")
             .build()

@@ -59,7 +59,7 @@ internal class ReviewApiTest {
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }
         val formBody = FormBody.Builder()
-            .add("action", "create")
+            .add("_action", "create")
             .add("courseId", courseId.toString())
             .add("userId", userId.toString())
             .add("createTime", curTime.toString())

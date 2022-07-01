@@ -21,7 +21,7 @@ class GeneralApiTest {
                 val body = Json.decodeFromString<ApiResponse<String>>(it.body!!.string())
                 assertEquals(body.status, ResponseStatus.FAIL)
                 assertTrue {
-                    body.detail.contains("Must provide parameter `action`")
+                    body.detail.contains("Must provide parameter `_action`")
                 }
             }
         }
@@ -32,7 +32,7 @@ class GeneralApiTest {
         val paths = listOf("course", "review", "teacher", "user")
         paths.forEach { path ->
             val formBody = FormBody.Builder()
-                .add("action", "create")
+                .add("_action", "create")
                 .build()
             val req = Request.Builder()
                 .url("http://localhost:${server.port()}/api/${path}")

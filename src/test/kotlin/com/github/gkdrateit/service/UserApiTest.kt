@@ -16,10 +16,13 @@ internal class UserApiTest {
 
     @Test
     fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
-        // TODO: query before create
+        val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        val randStr = (1..10)
+            .map { allowedChars.random() }
+            .joinToString("")
         val formBody = FormBody.Builder()
-            .add("action", "create")
-            .add("email", "test@ucas.ac.cn")
+            .add("_action", "create")
+            .add("email", "test_$randStr@ucas.ac.cn")
             .add("hashedPassword", "123456")
             .add("nickname", Base64.getEncoder().encodeToString("❤Aerith❤".toByteArray()))
             .add("startYear", "2020")

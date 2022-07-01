@@ -127,9 +127,9 @@ abstract class CrudApiBase : ApiBase() {
 
     override fun handle(ctx: Context) {
         logger.info("Received request from ${ctx.req.remoteAddr}:${ctx.req.remotePort}")
-        val actionRaw = ctx.formParam("action")
+        val actionRaw = ctx.formParam("_action")
         if (actionRaw == null) {
-            ctx.missingParamError("action")
+            ctx.missingParamError("_action")
             return
         }
         when (actionRaw.uppercase()) {
@@ -138,7 +138,7 @@ abstract class CrudApiBase : ApiBase() {
             "UPDATE" -> handleUpdate(ctx)
             "DELETE" -> handleDelete(ctx)
             else -> ctx.illegalParamError(
-                "action",
+                "_action",
                 "Argument action must be one of create/read/update/delete"
             )
         }
