@@ -1,7 +1,10 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Course
+import com.github.gkdrateit.database.Courses
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class CourseHandler : CrudApiBase() {
@@ -44,7 +47,42 @@ class CourseHandler : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context) {
-        ctx.notImplementedError()
+        try {
+            val query = Courses.selectAll()
+            ctx.formParam("courseId")?.let {
+                query.andWhere { Courses.id eq it.toInt() }
+            }
+            ctx.formParam("code")?.let {
+                query.andWhere { Courses.code eq it }
+            }
+            ctx.formParam("codeSeq")?.let {
+                query.andWhere { Courses.codeSeq eq it }
+            }
+            ctx.formParam("name")?.let {
+                query.andWhere { Courses.name like "$it%" }
+            }
+            ctx.formParam("teacherId")?.let {
+                query.andWhere { Courses.teacherId eq it.toInt() }
+            }
+            ctx.formParam("semester")?.let {
+                query.andWhere { Courses.semester eq it }
+            }
+            ctx.formParam("credit")?.let {
+                query.andWhere { Courses.credit eq it.toBigDecimal() }
+            }
+            ctx.formParam("degree")?.let {
+                query.andWhere { Courses.degree eq it.toInt() }
+            }
+            transaction {
+                query.map {
+                    Course.wrapRow(it).toModel()
+                }
+            }.let {
+                ctx.successReply(it)
+            }
+        } catch (e: Throwable) {
+            ctx.databaseError(e.message ?: "")
+        }
     }
 
     override fun handleUpdate(ctx: Context) {

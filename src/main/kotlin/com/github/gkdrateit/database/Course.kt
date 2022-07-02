@@ -1,6 +1,6 @@
 package com.github.gkdrateit.database
 
-import com.github.gkdrateit.util.BigDecimallSerializer
+import com.github.gkdrateit.util.BigDecimalSerializer
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -17,7 +17,7 @@ data class CourseModel(
     val teacherId: Int,
     val semester: String,
 
-    @Serializable(with = BigDecimallSerializer::class)
+    @Serializable(with = BigDecimalSerializer::class)
     val credit: BigDecimal,
     val degree: Int,
 )

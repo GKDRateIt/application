@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
 internal class Create : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
-        val teacherId = transaction { Teacher.all().first().id.value }
+        val qTeacherId = transaction { Teacher.all().first().id.value }
         val nameRaw = "test_course_create"
         val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
         assertTrue {
@@ -41,7 +41,7 @@ internal class Create : TestBase() {
             .add("code", randStr)
             .add("codeSeq", "A")
             .add("name", nameBase64)
-            .add("teacherId", teacherId.toString())
+            .add("teacherId", qTeacherId.toString())
             .add("semester", "spring")
             .add("credit", BigDecimal.valueOf(1.5).toString())
             .add("degree", "0")
