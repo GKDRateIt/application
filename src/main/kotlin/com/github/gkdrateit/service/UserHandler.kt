@@ -1,7 +1,10 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.User
+import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class UserHandler : CrudApiBase() {
@@ -40,7 +43,20 @@ class UserHandler : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context) {
-        ctx.notImplementedError()
+        val query = Users.selectAll()
+        ctx.formParam("nickname")?.let {
+            query.andWhere { Users.nickname like "$it%" }
+        }
+        ctx.formParam("email")?.let {
+            val prefix = it.substringBefore('@')
+            val postfix = it.substringAfter('@')
+            query.andWhere { Users.email like "$prefix%@$postfix" }
+        }
+        transaction {
+            query.map { User.wrapRow(it).toModel() }
+        }.let {
+            ctx.successReply(it)
+        }
     }
 
     override fun handleUpdate(ctx: Context) {

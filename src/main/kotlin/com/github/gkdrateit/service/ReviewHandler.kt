@@ -3,7 +3,9 @@ package com.github.gkdrateit.service
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -72,7 +74,18 @@ class ReviewHandler : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context) {
-        ctx.notImplementedError()
+        val query = Reviews.selectAll()
+        ctx.formParam("courseId")?.let {
+            query.andWhere { Reviews.courseId eq it.toInt() }
+        }
+        ctx.formParam("userId")?.let {
+            query.andWhere { Reviews.userId eq it.toInt() }
+        }
+        transaction {
+            query.map { Review.wrapRow(it).toModel() }
+        }.let {
+            ctx.successReply(it)
+        }
     }
 
     override fun handleUpdate(ctx: Context) {

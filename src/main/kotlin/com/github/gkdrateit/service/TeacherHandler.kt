@@ -1,7 +1,10 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Teacher
+import com.github.gkdrateit.database.Teachers
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
@@ -37,7 +40,15 @@ class TeacherHandler : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context) {
-        ctx.notImplementedError()
+        val query = Teachers.selectAll()
+        ctx.formParam("name")?.let {
+            query.andWhere { Teachers.name like "$it%" }
+        }
+        transaction {
+            query.map { Teacher.wrapRow(it).toModel() }
+        }.let {
+            ctx.successReply(it)
+        }
     }
 
     override fun handleUpdate(ctx: Context) {
