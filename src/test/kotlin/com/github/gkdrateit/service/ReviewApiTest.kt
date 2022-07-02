@@ -8,7 +8,9 @@ import okhttp3.FormBody
 import okhttp3.Request
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -17,11 +19,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ReviewApiTest {
     private val apiServer = ApiServer()
 
-    @Test
-    fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
+    @BeforeAll
+    fun prepareTable() {
         if (transaction { Teacher.all().empty() }) {
             transaction {
                 Teacher.new {
@@ -55,7 +58,10 @@ internal class ReviewApiTest {
                 }
             }
         }
+    }
 
+    @Test
+    fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val curTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0))
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }

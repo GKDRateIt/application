@@ -8,7 +8,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -22,7 +21,7 @@ internal class UserApiTest {
     private val apiServer = ApiServer()
 
     @Test
-    fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
+    fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         val randStr = (1..10)
             .map { allowedChars.random() }

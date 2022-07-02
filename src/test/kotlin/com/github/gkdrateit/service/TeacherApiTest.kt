@@ -19,7 +19,7 @@ internal class TeacherApiTest {
     private val apiServer = ApiServer()
 
     @Test
-    fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
+    fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val nameRaw = "test_teacher_create"
         val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
         assertTrue {

@@ -1,7 +1,9 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Review
+import com.github.gkdrateit.database.Reviews
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -78,6 +80,14 @@ class ReviewHandler : CrudApiBase() {
     }
 
     override fun handleDelete(ctx: Context) {
-        ctx.notImplementedError()
+        val reviewId = ctx.formParam("reviewId")?.toInt()
+        if (reviewId == null) {
+            ctx.missingParamError("reviewId")
+            return
+        }
+        transaction {
+            Reviews.deleteWhere { Reviews.id eq reviewId }
+        }
+        ctx.success()
     }
 }
