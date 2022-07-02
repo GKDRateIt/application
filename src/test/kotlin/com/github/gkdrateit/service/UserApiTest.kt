@@ -27,10 +27,11 @@ internal class UserApiTest {
         val randStr = (1..10)
             .map { allowedChars.random() }
             .joinToString("")
-        val nickNameBase64 = Base64.getEncoder().encodeToString("tu_create".toByteArray())
+        val nickNameRaw = "test_user_create"
+        val nickNameBase64 = Base64.getEncoder().encodeToString(nickNameRaw.toByteArray())
         assertTrue {
             transaction {
-                User.find { Users.nickname eq nickNameBase64 }.empty()
+                User.find { Users.nickname eq nickNameRaw }.empty()
             }
         }
         val formBody = FormBody.Builder()
@@ -53,12 +54,12 @@ internal class UserApiTest {
         }
         assertFalse {
             transaction {
-                User.find { Users.nickname eq nickNameBase64 }.empty()
+                User.find { Users.nickname eq nickNameRaw }.empty()
             }
         }
         transaction {
             Users.deleteWhere {
-                Users.nickname eq nickNameBase64
+                Users.nickname eq nickNameRaw
             }
         }
     }

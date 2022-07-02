@@ -32,10 +32,11 @@ internal class CourseApiTest {
             }
         }
         val teacherId = transaction { Teacher.all().first().id.value }
-        val nameBase64 = Base64.getEncoder().encodeToString("test_course_create".toByteArray())
+        val nameRaw = "test_course_create"
+        val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
         assertTrue {
             transaction {
-                Course.find { Courses.name eq nameBase64 }.empty()
+                Course.find { Courses.name eq nameRaw }.empty()
             }
         }
         val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
@@ -64,12 +65,12 @@ internal class CourseApiTest {
         }
         assertFalse {
             transaction {
-                Course.find { Courses.name eq nameBase64 }.empty()
+                Course.find { Courses.name eq nameRaw }.empty()
             }
         }
         transaction {
             Courses.deleteWhere {
-                Courses.name eq nameBase64
+                Courses.name eq nameRaw
             }
         }
     }

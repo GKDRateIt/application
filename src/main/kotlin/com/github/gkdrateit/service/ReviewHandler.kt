@@ -30,13 +30,16 @@ class ReviewHandler : CrudApiBase() {
             }
         }
 
-        try {
-            base64Decoder.decode(ctx.formParam("commentText")!!)
-            if (ctx.formParam("myGrade") != null) {
-                base64Decoder.decode(ctx.formParam("myGrade"))
-            }
-        } catch (e: IllegalArgumentException) {
-            ctx.base64Error(listOf("commentText", "myGrade"))
+        val commentTextDec = try {
+            String(base64Decoder.decode(ctx.formParam("commentText")!!))
+        } catch (e: Throwable) {
+            ctx.base64Error("commentText")
+            return
+        }
+        val myGradeDec: String? = try {
+            ctx.formParam("myGrade")?.let { String(base64Decoder.decode(it)) }
+        } catch (e: Throwable) {
+            ctx.base64Error("myGrade")
             return
         }
 
@@ -55,8 +58,8 @@ class ReviewHandler : CrudApiBase() {
                     quality = ctx.formParam("quality")!!.toInt()
                     difficulty = ctx.formParam("difficulty")!!.toInt()
                     workload = ctx.formParam("workload")!!.toInt()
-                    commentText = ctx.formParam("commentText")!!
-                    myGrade = ctx.formParam("myGrade")
+                    commentText = commentTextDec
+                    myGrade = myGradeDec
                     myMajor = ctx.formParam("myMajor")?.toInt()
                 }
             }

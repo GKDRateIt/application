@@ -16,8 +16,8 @@ class UserHandler : CrudApiBase() {
             }
         }
 
-        try {
-            base64Decoder.decode(ctx.formParam("nickname"))
+        val nickNameDec = try {
+            String(base64Decoder.decode(ctx.formParam("nickname")))
         } catch (e: IllegalArgumentException) {
             ctx.base64Error("nickname")
             return
@@ -28,7 +28,7 @@ class UserHandler : CrudApiBase() {
                 User.new {
                     email = ctx.formParam("email")!!
                     hashedPassword = ctx.formParam("hashedPassword")!!
-                    nickname = ctx.formParam("nickname")!!
+                    nickname = nickNameDec
                     startYear = ctx.formParam("startYear")!!
                     group = ctx.formParam("group")!!
                 }

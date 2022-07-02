@@ -20,7 +20,8 @@ internal class TeacherApiTest {
 
     @Test
     fun successCreate() = JavalinTest.test(apiServer.app) { server, client ->
-        val nameBase64 = Base64.getEncoder().encodeToString("test_teacher_create".toByteArray())
+        val nameRaw = "test_teacher_create"
+        val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
         assertTrue {
             transaction {
                 Teacher.find { Teachers.name eq nameBase64 }.empty()
@@ -43,12 +44,12 @@ internal class TeacherApiTest {
         }
         assertFalse {
             transaction {
-                Teacher.find { Teachers.name eq nameBase64 }.empty()
+                Teacher.find { Teachers.name eq nameRaw }.empty()
             }
         }
         transaction {
             Teachers.deleteWhere {
-                Teachers.name eq nameBase64
+                Teachers.name eq nameRaw
             }
         }
     }

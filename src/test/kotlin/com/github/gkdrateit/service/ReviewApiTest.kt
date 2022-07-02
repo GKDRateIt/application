@@ -59,10 +59,11 @@ internal class ReviewApiTest {
         val curTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0))
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }
-        val textBase64 = Base64.getEncoder().encodeToString("test_review_create".toByteArray())
+        val textRaw = "test_review_create"
+        val textBase64 = Base64.getEncoder().encodeToString(textRaw.toByteArray())
         assertTrue {
             transaction {
-                Review.find { Reviews.commentText eq textBase64 }.empty()
+                Review.find { Reviews.commentText eq textRaw }.empty()
             }
         }
 
@@ -90,12 +91,12 @@ internal class ReviewApiTest {
         }
         assertFalse {
             transaction {
-                Review.find { Reviews.commentText eq textBase64 }.empty()
+                Review.find { Reviews.commentText eq textRaw }.empty()
             }
         }
         transaction {
             Reviews.deleteWhere {
-                Reviews.commentText eq textBase64
+                Reviews.commentText eq textRaw
             }
         }
     }

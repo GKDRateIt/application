@@ -17,9 +17,10 @@ class CourseHandler : CrudApiBase() {
             }
         }
 
-        try {
-            base64Decoder.decode(ctx.formParam("name"))
-        } catch (e: IllegalArgumentException) {
+        val nameDec = try {
+            // Do NOT use ByteArray.toString() because it produces wrong format!!!
+            String(base64Decoder.decode(ctx.formParam("name")!!))
+        } catch (e: Throwable) {
             ctx.base64Error("name")
             return
         }
@@ -29,7 +30,7 @@ class CourseHandler : CrudApiBase() {
                 Course.new {
                     code = ctx.formParam("code")!!
                     codeSeq = ctx.formParam("codeSeq")
-                    name = ctx.formParam("name")!!
+                    name = nameDec
                     teacherId = ctx.formParam("teacherId")!!.toInt()
                     semester = ctx.formParam("semester")!!
                     credit = ctx.formParam("credit")!!.toBigDecimal()
