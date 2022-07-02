@@ -1,14 +1,21 @@
 package com.github.gkdrateit.service
 
 
+import com.github.gkdrateit.database.User
+import com.github.gkdrateit.database.Users
 import io.javalin.testtools.JavalinTest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 
 internal class UserApiTest {
@@ -20,11 +27,17 @@ internal class UserApiTest {
         val randStr = (1..10)
             .map { allowedChars.random() }
             .joinToString("")
+        val nickNameBase64 = Base64.getEncoder().encodeToString("tu_create".toByteArray())
+        assertTrue {
+            transaction {
+                User.find { Users.nickname eq nickNameBase64 }.empty()
+            }
+        }
         val formBody = FormBody.Builder()
             .add("_action", "create")
             .add("email", "test_$randStr@ucas.ac.cn")
             .add("hashedPassword", "123456")
-            .add("nickname", Base64.getEncoder().encodeToString("❤Aerith❤".toByteArray()))
+            .add("nickname", nickNameBase64)
             .add("startYear", "2020")
             .add("group", "default")
             .build()
@@ -38,6 +51,15 @@ internal class UserApiTest {
             val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
             assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
         }
-        // TODO: query after create
+        assertFalse {
+            transaction {
+                User.find { Users.nickname eq nickNameBase64 }.empty()
+            }
+        }
+        transaction {
+            Users.deleteWhere {
+                Users.nickname eq nickNameBase64
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.github.gkdrateit.service
 
+import com.github.gkdrateit.database.Course
+import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
 import com.github.gkdrateit.database.Teachers
 import io.javalin.testtools.JavalinTest
@@ -7,11 +9,14 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class CourseApiTest {
     private val apiServer = ApiServer()
@@ -27,7 +32,12 @@ internal class CourseApiTest {
             }
         }
         val teacherId = transaction { Teacher.all().first().id.value }
-        // TODO: query before create
+        val nameBase64 = Base64.getEncoder().encodeToString("test_course_create".toByteArray())
+        assertTrue {
+            transaction {
+                Course.find { Courses.name eq nameBase64 }.empty()
+            }
+        }
         val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         val randStr = (1..9)
             .map { allowedChars.random() }
@@ -36,7 +46,7 @@ internal class CourseApiTest {
             .add("_action", "create")
             .add("code", randStr)
             .add("codeSeq", "A")
-            .add("name", Base64.getEncoder().encodeToString("随便咯".toByteArray()))
+            .add("name", nameBase64)
             .add("teacherId", teacherId.toString())
             .add("semester", "spring")
             .add("credit", BigDecimal.valueOf(1.5).toString())
@@ -52,6 +62,15 @@ internal class CourseApiTest {
             val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
             assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
         }
-        // TODO: query after create
+        assertFalse {
+            transaction {
+                Course.find { Courses.name eq nameBase64 }.empty()
+            }
+        }
+        transaction {
+            Courses.deleteWhere {
+                Courses.name eq nameBase64
+            }
+        }
     }
 }

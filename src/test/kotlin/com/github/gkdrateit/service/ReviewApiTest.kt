@@ -1,13 +1,12 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.Course
-import com.github.gkdrateit.database.Teacher
-import com.github.gkdrateit.database.User
+import com.github.gkdrateit.database.*
 import io.javalin.testtools.JavalinTest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -15,6 +14,8 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class ReviewApiTest {
     private val apiServer = ApiServer()
@@ -54,10 +55,17 @@ internal class ReviewApiTest {
                 }
             }
         }
-        // TODO: query before create
+
         val curTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0))
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }
+        val textBase64 = Base64.getEncoder().encodeToString("test_review_create".toByteArray())
+        assertTrue {
+            transaction {
+                Review.find { Reviews.commentText eq textBase64 }.empty()
+            }
+        }
+
         val formBody = FormBody.Builder()
             .add("_action", "create")
             .add("courseId", courseId.toString())
@@ -68,7 +76,7 @@ internal class ReviewApiTest {
             .add("quality", "1")
             .add("difficulty", "1")
             .add("workload", "1")
-            .add("commentText", Base64.getEncoder().encodeToString("???###???".toByteArray()))
+            .add("commentText", textBase64)
             .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
@@ -80,6 +88,15 @@ internal class ReviewApiTest {
             val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
             assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
         }
-        // TODO: query after create
+        assertFalse {
+            transaction {
+                Review.find { Reviews.commentText eq textBase64 }.empty()
+            }
+        }
+        transaction {
+            Reviews.deleteWhere {
+                Reviews.commentText eq textBase64
+            }
+        }
     }
 }
