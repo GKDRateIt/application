@@ -1,7 +1,10 @@
-package com.github.gkdrateit.service
+package com.github.gkdrateit.service.teacher
 
 import com.github.gkdrateit.database.Teacher
 import com.github.gkdrateit.database.Teachers
+import com.github.gkdrateit.service.ApiResponse
+import com.github.gkdrateit.service.ApiServer
+import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -15,7 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-internal class TeacherApiTest {
+internal class Create {
     private val apiServer = ApiServer()
 
     @Test

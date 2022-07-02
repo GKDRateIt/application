@@ -1,8 +1,10 @@
-package com.github.gkdrateit.service
+package com.github.gkdrateit.service.course
 
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
+import com.github.gkdrateit.service.ApiResponse
+import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -10,7 +12,6 @@ import okhttp3.FormBody
 import okhttp3.Request
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
@@ -20,21 +21,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class CourseApiTest {
-    private val apiServer = ApiServer()
-
-    @BeforeAll
-    fun prepareTable() {
-        if (transaction { Teacher.all().empty() }) {
-            transaction {
-                Teacher.new {
-                    name = "TestTeacher"
-                    email = "test_teacher@ucas.ac.cn"
-                }
-            }
-        }
-    }
-
+internal class Create : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val teacherId = transaction { Teacher.all().first().id.value }

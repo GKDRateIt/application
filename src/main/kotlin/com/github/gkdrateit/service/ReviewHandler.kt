@@ -86,6 +86,14 @@ class ReviewHandler : CrudApiBase() {
             return
         }
         transaction {
+            Review.find { Reviews.id eq reviewId }.empty()
+        }.let {
+            if (it) {
+                ctx.illegalParamError("reviewId", "No such review.")
+                return
+            }
+        }
+        transaction {
             Reviews.deleteWhere { Reviews.id eq reviewId }
         }
         ctx.success()

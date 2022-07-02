@@ -1,8 +1,11 @@
-package com.github.gkdrateit.service
+package com.github.gkdrateit.service.user
 
 
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
+import com.github.gkdrateit.service.ApiResponse
+import com.github.gkdrateit.service.ApiServer
+import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -17,7 +20,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
-internal class UserApiTest {
+internal class Create {
     private val apiServer = ApiServer()
 
     @Test
