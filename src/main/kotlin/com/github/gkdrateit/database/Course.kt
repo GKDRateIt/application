@@ -1,12 +1,7 @@
 package com.github.gkdrateit.database
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
+import com.github.gkdrateit.util.BigDecimallSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -14,33 +9,18 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import java.math.BigDecimal
 
 @Serializable
-@SerialName("Course")
-private sealed interface CourseModel {
-    var code: String
-    var codeSeq: String?
-    var name: String
-    var teacherId: Int
-    var semester: String
-    var credit: BigDecimal
-    var degree: Int
-}
+data class CourseModel(
+    val courseId: Int,
+    val code: String,
+    val codeSeq: String?,
+    val name: String,
+    val teacherId: Int,
+    val semester: String,
 
-@OptIn(ExperimentalSerializationApi::class)
-private class CourseSerializer : KSerializer<Course> {
-    private val delegatedSerializer = CourseModel.serializer()
-
-    override val descriptor: SerialDescriptor
-        get() = SerialDescriptor("Teacher", delegatedSerializer.descriptor)
-
-    override fun deserialize(decoder: Decoder): Course {
-        throw IllegalStateException("Database entity should not be deserialized.")
-    }
-
-    override fun serialize(encoder: Encoder, value: Course) {
-        encoder.encodeSerializableValue(delegatedSerializer, value)
-    }
-}
-
+    @Serializable(with = BigDecimallSerializer::class)
+    val credit: BigDecimal,
+    val degree: Int,
+)
 
 object Courses : IntIdTable(columnName = "c_course_id") {
     val code = char("c_course_code", 9)
@@ -56,15 +36,18 @@ object Courses : IntIdTable(columnName = "c_course_id") {
     }
 }
 
-@Serializable(with = CourseSerializer::class)
-class Course(id: EntityID<Int>) : IntEntity(id), CourseModel {
+class Course(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Course>(Courses)
 
-    override var code by Courses.code
-    override var codeSeq by Courses.codeSeq
-    override var name by Courses.name
-    override var teacherId by Courses.teacherId
-    override var semester by Courses.semester
-    override var credit by Courses.credit
-    override var degree by Courses.degree
+    var code by Courses.code
+    var codeSeq by Courses.codeSeq
+    var name by Courses.name
+    var teacherId by Courses.teacherId
+    var semester by Courses.semester
+    var credit by Courses.credit
+    var degree by Courses.degree
+
+    fun toModel(): CourseModel {
+        return CourseModel(id.value, code, codeSeq, name, teacherId, semester, credit, degree)
+    }
 }

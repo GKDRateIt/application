@@ -1,42 +1,20 @@
 package com.github.gkdrateit.database
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 @Serializable
-@SerialName("User")
-private sealed interface UserModel {
-    val email: String
-    val hashedPassword: String
-    val nickname: String
-    val startYear: String
-    val group: String
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-private class UserSerializer : KSerializer<User> {
-    private val delegatedSerializer = UserModel.serializer()
-
-    override val descriptor: SerialDescriptor
-        get() = SerialDescriptor("Teacher", delegatedSerializer.descriptor)
-
-    override fun deserialize(decoder: Decoder): User {
-        throw IllegalStateException("Database entity should not be deserialized.")
-    }
-
-    override fun serialize(encoder: Encoder, value: User) {
-        encoder.encodeSerializableValue(delegatedSerializer, value)
-    }
-}
+data class UserModel(
+    val userId: Int,
+    val email: String,
+    val hashedPassword: String,
+    val nickname: String,
+    val startYear: String,
+    val group: String,
+)
 
 object Users : IntIdTable(columnName = "u_user_id") {
     val email = varchar("u_user_email", 70).uniqueIndex()
@@ -46,13 +24,16 @@ object Users : IntIdTable(columnName = "u_user_id") {
     val group = varchar("u_user_group", 20)
 }
 
-@Serializable(with = UserSerializer::class)
-class User(id: EntityID<Int>) : IntEntity(id), UserModel {
+class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
 
-    override var email by Users.email
-    override var hashedPassword by Users.hashedPassword
-    override var nickname by Users.nickname
-    override var startYear by Users.startYear
-    override var group by Users.group
+    var email by Users.email
+    var hashedPassword by Users.hashedPassword
+    var nickname by Users.nickname
+    var startYear by Users.startYear
+    var group by Users.group
+
+    fun toModel(): UserModel {
+        return UserModel(id.value, email, hashedPassword, nickname, startYear, group)
+    }
 }
