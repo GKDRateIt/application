@@ -15,6 +15,7 @@ class ApiServer {
         ReviewHandler(),
         TeacherHandler(),
         UserHandler(),
+        FuzzyHandler(),
     )
 
     init {
