@@ -1,24 +1,19 @@
 package com.github.gkdrateit.service.user
 
-import com.github.gkdrateit.database.CourseModel
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.User
-import com.github.gkdrateit.database.UserModel
 import com.github.gkdrateit.database.Users
-import com.github.gkdrateit.service.ApiResponse
 import com.github.gkdrateit.service.ApiServer
-import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.serialization.decodeFromString
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
-import org.jetbrains.exposed.sql.transactions.transaction
 
-internal class Read {
+internal class UserRead {
     private val apiServer = ApiServer()
 
     @Test
@@ -38,23 +33,22 @@ internal class Read {
                 }
             }
         }
-        val formBody = FormBody.Builder()
-            .add("_action", "read")
-            .add("nickname", "测试")
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "read",
+            "nickname" to "测试"
+        )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/user")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             val bodyStr = it.body!!.string()
             assertEquals(it.code, 200, bodyStr)
-            val body = Json.decodeFromString<ApiResponse<List<UserModel>>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
-            body.data!!.forEach {
-                assertTrue {
-                    it.nickname.startsWith("测试用户")
-                }
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
+            assertTrue {
+                bodyStr.contains("测试用户")
             }
         }
     }

@@ -1,14 +1,12 @@
 package com.github.gkdrateit.database
 
-import com.github.gkdrateit.util.BigDecimalSerializer
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import java.math.BigDecimal
 
-@Serializable
+//@Serializable
 data class CourseModel(
     val courseId: Int,
     val code: String,
@@ -16,8 +14,7 @@ data class CourseModel(
     val name: String,
     val teacherId: Int,
     val semester: String,
-
-    @Serializable(with = BigDecimalSerializer::class)
+//    @Serializable(with = BigDecimalSerializer::class)
     val credit: BigDecimal,
     val degree: Int,
 )

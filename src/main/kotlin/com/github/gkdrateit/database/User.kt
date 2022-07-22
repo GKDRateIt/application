@@ -1,12 +1,12 @@
 package com.github.gkdrateit.database
 
-import kotlinx.serialization.Serializable
+
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
-@Serializable
+//@Serializable
 data class UserModel(
     val userId: Int,
     val email: String,

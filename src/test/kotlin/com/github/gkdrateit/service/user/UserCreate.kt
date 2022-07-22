@@ -1,16 +1,14 @@
 package com.github.gkdrateit.service.user
 
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
-import com.github.gkdrateit.service.ApiResponse
 import com.github.gkdrateit.service.ApiServer
-import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -20,7 +18,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
-internal class Create {
+internal class UserCreate {
     private val apiServer = ApiServer()
 
     @Test
@@ -36,23 +34,24 @@ internal class Create {
                 User.find { Users.nickname eq nickNameRaw }.empty()
             }
         }
-        val formBody = FormBody.Builder()
-            .add("_action", "create")
-            .add("email", "test_$randStr@ucas.ac.cn")
-            .add("hashedPassword", "123456")
-            .add("nickname", nickNameBase64)
-            .add("startYear", "2020")
-            .add("group", "default")
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "create",
+            "email" to "test_$randStr@ucas.ac.cn",
+            "hashedPassword" to "123456",
+            "nickname" to nickNameBase64,
+            "startYear" to "2020",
+            "group" to "default"
+        )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/user")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
             val bodyStr = it.body!!.string()
-            val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
         }
         assertFalse {
             transaction {

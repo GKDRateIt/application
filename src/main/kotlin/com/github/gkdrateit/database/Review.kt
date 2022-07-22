@@ -1,7 +1,6 @@
 package com.github.gkdrateit.database
 
-import com.github.gkdrateit.util.LocalDateTimeSerializer
-import kotlinx.serialization.Serializable
+
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -9,16 +8,14 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
-@Serializable
+//@Serializable
 data class ReviewModel(
     val reviewId: Int,
     val courseId: Int,
     val userId: Int,
-
-    @Serializable(with = LocalDateTimeSerializer::class)
+//    @Serializable(with = LocalDateTimeSerializer::class)
     val createTime: LocalDateTime,
-
-    @Serializable(with = LocalDateTimeSerializer::class)
+//    @Serializable(with = LocalDateTimeSerializer::class)
     val lastUpdateTime: LocalDateTime,
     val overallRecommendation: Int,
     val quality: Int,

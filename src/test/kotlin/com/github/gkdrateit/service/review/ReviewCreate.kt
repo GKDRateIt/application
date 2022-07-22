@@ -1,16 +1,14 @@
 package com.github.gkdrateit.service.review
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
-import com.github.gkdrateit.service.ApiResponse
-import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -23,7 +21,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class Create : TestBase() {
+internal class ReviewCreate : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val curTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0))
@@ -37,27 +35,28 @@ internal class Create : TestBase() {
             }
         }
 
-        val formBody = FormBody.Builder()
-            .add("_action", "create")
-            .add("courseId", courseId.toString())
-            .add("userId", userId.toString())
-            .add("createTime", curTime.toString())
-            .add("lastUpdateTime", curTime.toString())
-            .add("overallRecommendation", "1")
-            .add("quality", "1")
-            .add("difficulty", "1")
-            .add("workload", "1")
-            .add("commentText", textBase64)
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "create",
+            "courseId" to courseId.toString(),
+            "userId" to userId.toString(),
+            "createTime" to curTime.toString(),
+            "lastUpdateTime" to curTime.toString(),
+            "overallRecommendation" to "1",
+            "quality" to "1",
+            "difficulty" to "1",
+            "workload" to "1",
+            "commentText" to textBase64
+        )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
             val bodyStr = it.body!!.string()
-            val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
         }
         assertFalse {
             transaction {

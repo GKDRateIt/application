@@ -1,16 +1,13 @@
 package com.github.gkdrateit.service.course
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
-import com.github.gkdrateit.database.CourseModel
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
-import com.github.gkdrateit.service.ApiResponse
-import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -20,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class Read : TestBase() {
+internal class CourseRead : TestBase() {
     @Test
     fun read() = JavalinTest.test(apiServer.app) { server, client ->
         val qTeacherId = transaction { Teacher.all().first().id.value }
@@ -47,23 +44,24 @@ internal class Read : TestBase() {
                 }
             }
         }
-        val formBody = FormBody.Builder()
-            .add("_action", "read")
-            .add("name", "测试")
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "read",
+            "name" to "测试"
+        )
+
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             val bodyStr = it.body!!.string()
             assertEquals(it.code, 200, bodyStr)
-            val body = Json.decodeFromString<ApiResponse<List<CourseModel>>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
-            body.data!!.forEach {
-                assertTrue {
-                    it.name.startsWith("测试")
-                }
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
+            assertTrue {
+                bodyStr.contains("测试课程-1") &&
+                        bodyStr.contains("测试课程-2")
             }
         }
         // Delete them

@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "1.7.0"
+    kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.6.21"
 }
 
@@ -19,12 +19,14 @@ val exposedVersion: String by project
 dependencies {
     // kotlin coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
     // slg4j
     implementation("org.slf4j:slf4j-simple:1.7.36")
-    // kotlin serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     // https://mvnrepository.com/artifact/io.javalin/javalin
     implementation("io.javalin:javalin:4.6.1")
+//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3")
     // kotlin orm
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -33,11 +35,9 @@ dependencies {
     // pgjdbc-ng driver
     implementation("org.postgresql:postgresql:42.3.6")
 
-
     testImplementation(kotlin("test"))
     testImplementation("io.javalin:javalin-testtools:4.6.1")
-    // javalin json mapper fallback
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 }
 
 tasks.test {

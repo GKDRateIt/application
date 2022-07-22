@@ -1,15 +1,13 @@
 package com.github.gkdrateit.service.course
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
-import com.github.gkdrateit.service.ApiResponse
-import com.github.gkdrateit.service.ResponseStatus
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
@@ -21,7 +19,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class Create : TestBase() {
+internal class CourseCreate : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val qTeacherId = transaction { Teacher.all().first().id.value }
@@ -36,25 +34,26 @@ internal class Create : TestBase() {
         val randStr = (1..9)
             .map { allowedChars.random() }
             .joinToString("")
-        val formBody = FormBody.Builder()
-            .add("_action", "create")
-            .add("code", randStr)
-            .add("codeSeq", "A")
-            .add("name", nameBase64)
-            .add("teacherId", qTeacherId.toString())
-            .add("semester", "spring")
-            .add("credit", BigDecimal.valueOf(1.5).toString())
-            .add("degree", "0")
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "create",
+            "code" to randStr,
+            "codeSeq" to "A",
+            "name" to nameBase64,
+            "teacherId" to qTeacherId.toString(),
+            "semester" to "spring",
+            "credit" to BigDecimal.valueOf(1.5).toString(),
+            "degree" to "0"
+        )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
             val bodyStr = it.body!!.string()
-            val body = Json.decodeFromString<ApiResponse<String>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
         }
         assertFalse {
             transaction {

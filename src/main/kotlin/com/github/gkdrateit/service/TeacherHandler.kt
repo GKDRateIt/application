@@ -1,8 +1,8 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Teacher
+import com.github.gkdrateit.database.TeacherModel
 import com.github.gkdrateit.database.Teachers
-import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -12,17 +12,15 @@ class TeacherHandler : CrudApiBase() {
     override val path: String
         get() = "/teacher"
 
-    override fun handleCreate(ctx: Context) {
-        if (ctx.formParam("name") == null) {
-            ctx.missingParamError("name")
-            return
+    override fun handleCreate(param: Map<String, String>): ApiResponse<String> {
+        if (param["name"] == null) {
+            return missingParamError("name")
         }
 
         val nameDec = try {
-            String(base64Decoder.decode(ctx.formParam("name")!!))
+            String(base64Decoder.decode(param["name"]!!))
         } catch (e: IllegalArgumentException) {
-            ctx.base64Error("name")
-            return
+            return base64Error("name")
         }
 
         try {
@@ -30,32 +28,32 @@ class TeacherHandler : CrudApiBase() {
             transaction {
                 Teacher.new {
                     name = nameDec
-                    email = ctx.formParam("email")
+                    email = param["email"]
                 }
             }
-            ctx.success()
+            return success()
         } catch (e: Throwable) {
-            ctx.databaseError(e.message ?: "")
+            return databaseError(e.message ?: "")
         }
     }
 
-    override fun handleRead(ctx: Context) {
+    override fun handleRead(param: Map<String, String>): ApiResponse<List<TeacherModel>> {
         val query = Teachers.selectAll()
-        ctx.formParam("name")?.let {
+        param["name"]?.let {
             query.andWhere { Teachers.name like "$it%" }
         }
         transaction {
             query.map { Teacher.wrapRow(it).toModel() }
         }.let {
-            ctx.successReply(it)
+            return successReply(it)
         }
     }
 
-    override fun handleUpdate(ctx: Context) {
-        ctx.notImplementedError()
+    override fun handleUpdate(param: Map<String, String>): ApiResponse<String> {
+        return notImplementedError()
     }
 
-    override fun handleDelete(ctx: Context) {
-        ctx.notImplementedError()
+    override fun handleDelete(param: Map<String, String>): ApiResponse<String> {
+        return notImplementedError()
     }
 }

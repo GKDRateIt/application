@@ -2,75 +2,73 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
-import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class CourseHandler : CrudApiBase() {
+class CourseHandler :
+    CrudApiBase() {
     override val path: String
         get() = "/course"
 
 
-    override fun handleCreate(ctx: Context) {
+    override fun handleCreate(param: Map<String, String>): ApiResponse<*> {
         arrayOf("code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
-            if (ctx.formParam(key) == null) {
-                ctx.missingParamError(key)
-                return
+            if (param[key] == null) {
+                return missingParamError(key)
             }
         }
 
         val nameDec = try {
             // Do NOT use ByteArray.toString() because it produces wrong format!!!
-            String(base64Decoder.decode(ctx.formParam("name")!!))
+            String(base64Decoder.decode(param["name"]!!))
         } catch (e: Throwable) {
-            ctx.base64Error("name")
-            return
+            return base64Error("name")
         }
 
         try {
             transaction {
                 Course.new {
-                    code = ctx.formParam("code")!!
-                    codeSeq = ctx.formParam("codeSeq")
+                    code = param["code"]!!
+                    codeSeq = param["codeSeq"]
                     name = nameDec
-                    teacherId = ctx.formParam("teacherId")!!.toInt()
-                    semester = ctx.formParam("semester")!!
-                    credit = ctx.formParam("credit")!!.toBigDecimal()
-                    degree = ctx.formParam("degree")!!.toInt()
+                    teacherId = param["teacherId"]!!.toInt()
+                    semester = param["semester"]!!
+                    credit = param["credit"]!!.toBigDecimal()
+                    degree = param["degree"]!!.toInt()
                 }
             }
-            ctx.success()
+            return success()
         } catch (e: Throwable) {
-            ctx.databaseError(e.message ?: "")
+            return databaseError(e.message ?: "")
         }
     }
 
-    override fun handleRead(ctx: Context) {
+    override fun handleRead(param: Map<String, String>): ApiResponse<*> {
         try {
             val query = Courses.selectAll()
-            ctx.formParam("courseId")?.let {
+            param["courseId"]?.let {
                 query.andWhere { Courses.id eq it.toInt() }
             }
-            ctx.formParam("code")?.let {
+            param["code"]?.let {
                 query.andWhere { Courses.code eq it }
             }
-            ctx.formParam("codeSeq")?.let {
+            param["codeSeq"]?.let {
                 query.andWhere { Courses.codeSeq eq it }
             }
-            ctx.formParam("name")?.let {
+            param["name"]?.let {
                 query.andWhere { Courses.name like "$it%" }
             }
-            ctx.formParam("teacherId")?.let {
+            param["teacherId"]?.let {
                 query.andWhere { Courses.teacherId eq it.toInt() }
             }
-            ctx.formParam("semester")?.let {
+            param["semester"]?.let {
                 query.andWhere { Courses.semester eq it }
             }
-            ctx.formParam("credit")?.let {
+            param["credit"]?.let {
                 query.andWhere { Courses.credit eq it.toBigDecimal() }
             }
-            ctx.formParam("degree")?.let {
+            param["degree"]?.let {
                 query.andWhere { Courses.degree eq it.toInt() }
             }
             transaction {
@@ -78,18 +76,18 @@ class CourseHandler : CrudApiBase() {
                     Course.wrapRow(it).toModel()
                 }
             }.let {
-                ctx.successReply(it)
+                return successReply(it)
             }
         } catch (e: Throwable) {
-            ctx.databaseError(e.message ?: "")
+            return databaseError(e.message ?: "")
         }
     }
 
-    override fun handleUpdate(ctx: Context) {
-        ctx.notImplementedError()
+    override fun handleUpdate(param: Map<String, String>): ApiResponse<*> {
+        return notImplementedError()
     }
 
-    override fun handleDelete(ctx: Context) {
-        ctx.notImplementedError()
+    override fun handleDelete(param: Map<String, String>): ApiResponse<*> {
+        return notImplementedError()
     }
 }

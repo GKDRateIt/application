@@ -1,8 +1,8 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Review
+import com.github.gkdrateit.database.ReviewModel
 import com.github.gkdrateit.database.Reviews
-import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.selectAll
@@ -16,7 +16,7 @@ class ReviewHandler : CrudApiBase() {
 
     private val zoneOffset = ZoneOffset.ofHours(0)
 
-    override fun handleCreate(ctx: Context) {
+    override fun handleCreate(param: Map<String, String>): ApiResponse<String> {
         arrayOf(
             "courseId",
             "userId",
@@ -28,87 +28,79 @@ class ReviewHandler : CrudApiBase() {
             "workload",
             "commentText"
         ).forEach { key ->
-            if (ctx.formParam(key) == null) {
-                ctx.missingParamError(key)
-                return
+            if (param[key] == null) {
+                return missingParamError(key)
             }
         }
 
         val commentTextDec = try {
-            String(base64Decoder.decode(ctx.formParam("commentText")!!))
+            String(base64Decoder.decode(param["commentText"]!!))
         } catch (e: Throwable) {
-            ctx.base64Error("commentText")
-            return
+            return base64Error("commentText")
         }
         val myGradeDec: String? = try {
-            ctx.formParam("myGrade")?.let { String(base64Decoder.decode(it)) }
+            param["myGrade"]?.let { String(base64Decoder.decode(it)) }
         } catch (e: Throwable) {
-            ctx.base64Error("myGrade")
-            return
+            return base64Error("myGrade")
         }
 
         try {
             transaction {
                 Review.new {
-                    courseId = ctx.formParam("courseId")!!.toInt()
-                    userId = ctx.formParam("userId")!!.toInt()
-                    createTime = ctx.formParam("createTime")!!.toLong().let {
+                    courseId = param["courseId"]!!.toInt()
+                    userId = param["userId"]!!.toInt()
+                    createTime = param["createTime"]!!.toLong().let {
                         LocalDateTime.ofEpochSecond(it, 0, zoneOffset)
                     }
-                    lastUpdateTime = ctx.formParam("lastUpdateTime")!!.toLong().let {
+                    lastUpdateTime = param["lastUpdateTime"]!!.toLong().let {
                         LocalDateTime.ofEpochSecond(it, 0, zoneOffset)
                     }
-                    overallRecommendation = ctx.formParam("overallRecommendation")!!.toInt()
-                    quality = ctx.formParam("quality")!!.toInt()
-                    difficulty = ctx.formParam("difficulty")!!.toInt()
-                    workload = ctx.formParam("workload")!!.toInt()
+                    overallRecommendation = param["overallRecommendation"]!!.toInt()
+                    quality = param["quality"]!!.toInt()
+                    difficulty = param["difficulty"]!!.toInt()
+                    workload = param["workload"]!!.toInt()
                     commentText = commentTextDec
                     myGrade = myGradeDec
-                    myMajor = ctx.formParam("myMajor")?.toInt()
+                    myMajor = param["myMajor"]?.toInt()
                 }
             }
-            ctx.success()
+            return success()
         } catch (e: Throwable) {
-            ctx.databaseError(e.message ?: "")
+            return databaseError(e.message ?: "")
         }
     }
 
-    override fun handleRead(ctx: Context) {
+    override fun handleRead(param: Map<String, String>): ApiResponse<List<ReviewModel>> {
         val query = Reviews.selectAll()
-        ctx.formParam("courseId")?.let {
+        param["courseId"]?.let {
             query.andWhere { Reviews.courseId eq it.toInt() }
         }
-        ctx.formParam("userId")?.let {
+        param["userId"]?.let {
             query.andWhere { Reviews.userId eq it.toInt() }
         }
         transaction {
             query.map { Review.wrapRow(it).toModel() }
         }.let {
-            ctx.successReply(it)
+            return successReply(it)
         }
     }
 
-    override fun handleUpdate(ctx: Context) {
-        ctx.notImplementedError()
+    override fun handleUpdate(param: Map<String, String>): ApiResponse<String> {
+        return notImplementedError()
     }
 
-    override fun handleDelete(ctx: Context) {
-        val reviewId = ctx.formParam("reviewId")?.toInt()
-        if (reviewId == null) {
-            ctx.missingParamError("reviewId")
-            return
-        }
+    override fun handleDelete(param: Map<String, String>): ApiResponse<String> {
+        val reviewId = param["reviewId"]?.toInt() ?: return missingParamError("reviewId")
         transaction {
             Review.find { Reviews.id eq reviewId }.empty()
         }.let {
             if (it) {
-                ctx.illegalParamError("reviewId", "No such review.")
-                return
+                return illegalParamError("reviewId", "No such review.")
             }
         }
         transaction {
             Reviews.deleteWhere { Reviews.id eq reviewId }
         }
-        ctx.success()
+        return success()
     }
 }

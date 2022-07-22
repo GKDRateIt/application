@@ -1,13 +1,14 @@
 package com.github.gkdrateit.service.review
 
-import com.github.gkdrateit.database.*
-import com.github.gkdrateit.service.ApiResponse
-import com.github.gkdrateit.service.ResponseStatus
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.gkdrateit.database.Course
+import com.github.gkdrateit.database.Review
+import com.github.gkdrateit.database.Reviews
+import com.github.gkdrateit.database.User
 import io.javalin.testtools.JavalinTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -16,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class Read : TestBase() {
+internal class ReviewRead : TestBase() {
 
     @Test
     fun read() = JavalinTest.test(apiServer.app) { server, client ->
@@ -40,23 +41,22 @@ internal class Read : TestBase() {
                 }
             }
         }
-        val formBody = FormBody.Builder()
-            .add("_action", "read")
-            .add("userId", qUserId.toString())
-            .build()
+        val postBody = hashMapOf(
+            "_action" to "read",
+            "userId" to qUserId.toString()
+        )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
-            .post(formBody)
+            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
         client.request(req).use {
             val bodyStr = it.body!!.string()
             assertEquals(it.code, 200, bodyStr)
-            val body = Json.decodeFromString<ApiResponse<List<ReviewModel>>>(bodyStr)
-            assertEquals(body.status, ResponseStatus.SUCCESS, bodyStr)
-            body.data!!.forEach {
-                assertTrue {
-                    it.commentText.startsWith("测试评论")
-                }
+            assertTrue {
+                bodyStr.contains("SUCCESS")
+            }
+            assertTrue {
+                bodyStr.contains("测试评论_123")
             }
         }
     }
