@@ -28,7 +28,6 @@ internal class UserCreate {
             .map { allowedChars.random() }
             .joinToString("")
         val nickNameRaw = "test_user_create"
-        val nickNameBase64 = Base64.getEncoder().encodeToString(nickNameRaw.toByteArray())
         assertTrue {
             transaction {
                 User.find { Users.nickname eq nickNameRaw }.empty()
@@ -38,7 +37,7 @@ internal class UserCreate {
             "_action" to "create",
             "email" to "test_$randStr@ucas.ac.cn",
             "hashedPassword" to "123456",
-            "nickname" to nickNameBase64,
+            "nickname" to nickNameRaw,
             "startYear" to "2020",
             "group" to "default"
         )

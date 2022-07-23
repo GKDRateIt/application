@@ -3,6 +3,7 @@ package com.github.gkdrateit.service
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.UserModel
 import com.github.gkdrateit.database.Users
+import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -11,18 +12,15 @@ class UserHandler : CrudApiBase() {
     override val path: String
         get() = "/user"
 
-    override fun handleCreate(param: Map<String, String>): ApiResponse<String> {
+    override fun handleCreate(ctx: Context): ApiResponse<String> {
+        val param = ctx.paramJsonMap()
         arrayOf("email", "hashedPassword", "nickname", "startYear", "group").forEach { key ->
             if (param[key] == null) {
                 return missingParamError(key)
             }
         }
 
-        val nickNameDec = try {
-            String(base64Decoder.decode(param["nickname"]))
-        } catch (e: IllegalArgumentException) {
-            return base64Error("nickname")
-        }
+        val nickNameDec = param["nickname"]!!
 
         return try {
             transaction {
@@ -40,7 +38,8 @@ class UserHandler : CrudApiBase() {
         }
     }
 
-    override fun handleRead(param: Map<String, String>): ApiResponse<List<UserModel>> {
+    override fun handleRead(ctx: Context): ApiResponse<List<UserModel>> {
+        val param = ctx.paramJsonMap()
         val query = Users.selectAll()
         param["nickname"]?.let {
             query.andWhere { Users.nickname like "$it%" }
@@ -57,11 +56,11 @@ class UserHandler : CrudApiBase() {
         }
     }
 
-    override fun handleUpdate(param: Map<String, String>): ApiResponse<String> {
+    override fun handleUpdate(ctx: Context): ApiResponse<String> {
         return notImplementedError()
     }
 
-    override fun handleDelete(param: Map<String, String>): ApiResponse<String> {
+    override fun handleDelete(ctx: Context): ApiResponse<String> {
         return notImplementedError()
     }
 }

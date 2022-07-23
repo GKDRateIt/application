@@ -80,6 +80,10 @@ abstract class ApiBase {
     fun databaseError(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
+
+    fun Context.paramJsonMap(): Map<String, String> {
+        return this.bodyAsClass<HashMap<String, String>>()
+    }
 }
 
 abstract class CrudApiBase : ApiBase() {
@@ -89,20 +93,20 @@ abstract class CrudApiBase : ApiBase() {
     protected val base64Decoder: Base64.Decoder = Base64.getDecoder()
     protected val base64Encoder: Base64.Encoder = Base64.getEncoder()
 
-    abstract fun handleCreate(param: Map<String, String>): ApiResponse<*>
-    abstract fun handleRead(param: Map<String, String>): ApiResponse<*>
-    abstract fun handleUpdate(param: Map<String, String>): ApiResponse<*>
-    abstract fun handleDelete(param: Map<String, String>): ApiResponse<*>
+    abstract fun handleCreate(ctx: Context): ApiResponse<*>
+    abstract fun handleRead(ctx: Context): ApiResponse<*>
+    abstract fun handleUpdate(ctx: Context): ApiResponse<*>
+    abstract fun handleDelete(ctx: Context): ApiResponse<*>
 
     override fun handle(ctx: Context) {
         logger.info("Received request from ${ctx.req.remoteAddr}:${ctx.req.remotePort}")
-        val form = ctx.bodyAsClass<HashMap<String, String>>()
-        when (form["_action"]?.uppercase()) {
+        val param = ctx.paramJsonMap()
+        when (param["_action"]?.uppercase()) {
             null -> missingParamError("_action")
-            "CREATE" -> handleCreate(form)
-            "READ" -> handleRead(form)
-            "UPDATE" -> handleUpdate(form)
-            "DELETE" -> handleDelete(form)
+            "CREATE" -> handleCreate(ctx)
+            "READ" -> handleRead(ctx)
+            "UPDATE" -> handleUpdate(ctx)
+            "DELETE" -> handleDelete(ctx)
             else -> illegalParamError(
                 "_action",
                 "Argument action must be one of create/read/update/delete"

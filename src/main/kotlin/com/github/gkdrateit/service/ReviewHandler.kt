@@ -3,6 +3,7 @@ package com.github.gkdrateit.service
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.ReviewModel
 import com.github.gkdrateit.database.Reviews
+import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.selectAll
@@ -16,7 +17,8 @@ class ReviewHandler : CrudApiBase() {
 
     private val zoneOffset = ZoneOffset.ofHours(0)
 
-    override fun handleCreate(param: Map<String, String>): ApiResponse<String> {
+    override fun handleCreate(ctx: Context): ApiResponse<String> {
+        val param = ctx.paramJsonMap()
         arrayOf(
             "courseId",
             "userId",
@@ -70,8 +72,9 @@ class ReviewHandler : CrudApiBase() {
         }
     }
 
-    override fun handleRead(param: Map<String, String>): ApiResponse<List<ReviewModel>> {
+    override fun handleRead(ctx: Context): ApiResponse<List<ReviewModel>> {
         val query = Reviews.selectAll()
+        val param = ctx.paramJsonMap()
         param["courseId"]?.let {
             query.andWhere { Reviews.courseId eq it.toInt() }
         }
@@ -85,11 +88,12 @@ class ReviewHandler : CrudApiBase() {
         }
     }
 
-    override fun handleUpdate(param: Map<String, String>): ApiResponse<String> {
+    override fun handleUpdate(ctx: Context): ApiResponse<String> {
         return notImplementedError()
     }
 
-    override fun handleDelete(param: Map<String, String>): ApiResponse<String> {
+    override fun handleDelete(ctx: Context): ApiResponse<String> {
+        val param = ctx.paramJsonMap()
         val reviewId = param["reviewId"]?.toInt() ?: return missingParamError("reviewId")
         transaction {
             Review.find { Reviews.id eq reviewId }.empty()

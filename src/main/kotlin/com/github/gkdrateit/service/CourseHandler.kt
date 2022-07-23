@@ -2,6 +2,7 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
+import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -12,7 +13,8 @@ class CourseHandler :
         get() = "/course"
 
 
-    override fun handleCreate(param: Map<String, String>): ApiResponse<*> {
+    override fun handleCreate(ctx: Context): ApiResponse<*> {
+        val param = ctx.paramJsonMap()
         arrayOf("code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
             if (param[key] == null) {
                 return missingParamError(key)
@@ -44,7 +46,8 @@ class CourseHandler :
         }
     }
 
-    override fun handleRead(param: Map<String, String>): ApiResponse<*> {
+    override fun handleRead(ctx: Context): ApiResponse<*> {
+        val param = ctx.paramJsonMap()
         try {
             val query = Courses.selectAll()
             param["courseId"]?.let {
@@ -83,11 +86,11 @@ class CourseHandler :
         }
     }
 
-    override fun handleUpdate(param: Map<String, String>): ApiResponse<*> {
+    override fun handleUpdate(ctx: Context): ApiResponse<*> {
         return notImplementedError()
     }
 
-    override fun handleDelete(param: Map<String, String>): ApiResponse<*> {
+    override fun handleDelete(ctx: Context): ApiResponse<*> {
         return notImplementedError()
     }
 }
