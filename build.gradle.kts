@@ -22,11 +22,15 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
     // slg4j
     implementation("org.slf4j:slf4j-simple:1.7.36")
-    // https://mvnrepository.com/artifact/io.javalin/javalin
+    // javalin
     implementation("io.javalin:javalin:4.6.1")
-//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    // jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3")
+    // guava
+    implementation("com.google.guava:guava:31.1-jre")
+    // java web token
+    implementation("com.auth0:java-jwt:4.0.0")
     // kotlin orm
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")

@@ -27,6 +27,9 @@ abstract class ApiBase {
 
     protected val logger = LoggerFactory.getLogger("")
 
+    protected val base64Decoder: Base64.Decoder = Base64.getDecoder()
+    protected val base64Encoder: Base64.Encoder = Base64.getEncoder()
+
     fun notImplementedError(): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, "Not Implemented yet.", null)
     }
@@ -81,17 +84,26 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
 
+    fun authError(): ApiResponse<String> {
+        return ApiResponse(ResponseStatus.FAIL, "Wrong username or password", null)
+    }
+
+    fun jwtError(): ApiResponse<String> {
+        return ApiResponse(ResponseStatus.FAIL, "Invalid JWT", null)
+    }
+
     fun Context.paramJsonMap(): Map<String, String> {
         return this.bodyAsClass<HashMap<String, String>>()
+    }
+
+    fun Context.javaWebToken(): String {
+        return this.header("Authorization")?.substringAfter("Bearer ") ?: ""
     }
 }
 
 abstract class CrudApiBase : ApiBase() {
     override val method: HttpMethod
         get() = HttpMethod.POST
-
-    protected val base64Decoder: Base64.Decoder = Base64.getDecoder()
-    protected val base64Encoder: Base64.Encoder = Base64.getEncoder()
 
     abstract fun handleCreate(ctx: Context): ApiResponse<*>
     abstract fun handleRead(ctx: Context): ApiResponse<*>

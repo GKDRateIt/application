@@ -8,7 +8,7 @@ import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.post
 
 class ApiServer {
-    val app: Javalin = Javalin.create{
+    val app: Javalin = Javalin.create {
         it.enableCorsForAllOrigins()
         it.enableDevLogging()
     }
@@ -18,7 +18,7 @@ class ApiServer {
         ReviewHandler(),
         TeacherHandler(),
         UserHandler(),
-//        FuzzyHandler(),
+        Login(),
     )
 
     init {
