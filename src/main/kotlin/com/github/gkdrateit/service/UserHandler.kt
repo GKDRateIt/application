@@ -9,6 +9,24 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class UserHandler : CrudApiBase() {
+    data class UserModelSimplified(
+        val userId: Int,
+        val email: String,
+        val nickname: String,
+        val startYear: String,
+        val group: String,
+    )
+
+    private fun UserModel.hidePassword(): UserModelSimplified {
+        return UserModelSimplified(
+            userId = this.userId,
+            email = this.email,
+            nickname = this.nickname,
+            startYear = this.startYear,
+            group = this.group,
+        )
+    }
+
     override val path: String
         get() = "/user"
 
@@ -38,9 +56,12 @@ class UserHandler : CrudApiBase() {
         }
     }
 
-    override fun handleRead(ctx: Context): ApiResponse<List<UserModel>> {
+    override fun handleRead(ctx: Context): ApiResponse<List<UserModelSimplified>> {
         val param = ctx.paramJsonMap()
         val query = Users.selectAll()
+        param["userId"]?.let {
+            query.andWhere { Users.id eq it.toInt() }
+        }
         param["nickname"]?.let {
             query.andWhere { Users.nickname like "$it%" }
         }
@@ -50,7 +71,7 @@ class UserHandler : CrudApiBase() {
             query.andWhere { Users.email like "$prefix%@$postfix" }
         }
         transaction {
-            query.map { User.wrapRow(it).toModel() }
+            query.map { User.wrapRow(it).toModel().hidePassword() }
         }.let {
             return successReply(it)
         }

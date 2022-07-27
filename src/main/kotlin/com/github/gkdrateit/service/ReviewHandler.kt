@@ -1,8 +1,6 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.Review
-import com.github.gkdrateit.database.ReviewModel
-import com.github.gkdrateit.database.Reviews
+import com.github.gkdrateit.database.*
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
@@ -21,7 +19,7 @@ class ReviewHandler : CrudApiBase() {
         val param = ctx.paramJsonMap()
         arrayOf(
             "courseId",
-            "userId",
+//            "userId",
             "createTime",
             "lastUpdateTime",
             "overallRecommendation",
@@ -35,22 +33,17 @@ class ReviewHandler : CrudApiBase() {
             }
         }
 
-        val commentTextDec = try {
-            String(base64Decoder.decode(param["commentText"]!!))
-        } catch (e: Throwable) {
-            return base64Error("commentText")
-        }
-        val myGradeDec: String? = try {
-            param["myGrade"]?.let { String(base64Decoder.decode(it)) }
-        } catch (e: Throwable) {
-            return base64Error("myGrade")
-        }
+        val queryUserId = param["userId"]?.toInt() ?: param["email"]?.let {
+            transaction {
+                User.find { Users.email eq it }.firstOrNull()?.toModel()
+            }?.userId
+        } ?: return illegalParamError(listOf("userId", "email"), extraInfo="userId or email is required")
 
         try {
             transaction {
                 Review.new {
                     courseId = param["courseId"]!!.toInt()
-                    userId = param["userId"]!!.toInt()
+                    userId = queryUserId
                     createTime = param["createTime"]!!.toLong().let {
                         LocalDateTime.ofEpochSecond(it, 0, zoneOffset)
                     }
@@ -61,8 +54,8 @@ class ReviewHandler : CrudApiBase() {
                     quality = param["quality"]!!.toInt()
                     difficulty = param["difficulty"]!!.toInt()
                     workload = param["workload"]!!.toInt()
-                    commentText = commentTextDec
-                    myGrade = myGradeDec
+                    commentText = param["commentText"]!!
+                    myGrade = param["myGrade"]
                     myMajor = param["myMajor"]?.toInt()
                 }
             }

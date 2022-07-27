@@ -42,6 +42,9 @@ class TeacherHandler : CrudApiBase() {
     override fun handleRead(ctx: Context): ApiResponse<List<TeacherModel>> {
         val query = Teachers.selectAll()
         val param = ctx.paramJsonMap()
+        param["teacherId"]?.let {
+            query.andWhere { Teachers.id eq it.toInt() }
+        }
         param["name"]?.let {
             query.andWhere { Teachers.name like "$it%" }
         }
