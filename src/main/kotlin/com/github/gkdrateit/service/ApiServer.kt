@@ -18,6 +18,7 @@ class ApiServer {
         ReviewController(),
         TeacherController(),
         UserController(),
+        EmailVerificationController(),
         Login(),
     )
 
@@ -30,6 +31,7 @@ class ApiServer {
                         HttpMethod.GET -> get(it.path) { ctx ->
                             it.handle(ctx)
                         }
+
                         HttpMethod.POST -> post(it.path) { ctx ->
                             it.handle(ctx)
                         }
