@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
-class TeacherHandler : CrudApiBase() {
+class TeacherController : CrudApiBase() {
     override val path: String
         get() = "/teacher"
 

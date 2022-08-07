@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class UserHandler : CrudApiBase() {
+class UserController : CrudApiBase() {
     data class UserModelSimplified(
         val userId: Int,
         val email: String,

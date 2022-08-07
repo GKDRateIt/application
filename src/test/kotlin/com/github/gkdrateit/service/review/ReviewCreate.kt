@@ -28,7 +28,6 @@ internal class ReviewCreate : TestBase() {
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }
         val textRaw = "test_review_create"
-        val textBase64 = Base64.getEncoder().encodeToString(textRaw.toByteArray())
         assertTrue {
             transaction {
                 Review.find { Reviews.commentText eq textRaw }.empty()
@@ -45,7 +44,7 @@ internal class ReviewCreate : TestBase() {
             "quality" to "1",
             "difficulty" to "1",
             "workload" to "1",
-            "commentText" to textBase64
+            "commentText" to textRaw
         )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")

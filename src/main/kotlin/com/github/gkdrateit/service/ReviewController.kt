@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class ReviewHandler : CrudApiBase() {
+class ReviewController : CrudApiBase() {
     override val path: String
         get() = "/review"
 

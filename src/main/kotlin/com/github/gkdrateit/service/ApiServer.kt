@@ -14,10 +14,10 @@ class ApiServer {
     }
 
     private val handlers = listOf(
-        CourseHandler(),
-        ReviewHandler(),
-        TeacherHandler(),
-        UserHandler(),
+        CourseController(),
+        ReviewController(),
+        TeacherController(),
+        UserController(),
         Login(),
     )
 

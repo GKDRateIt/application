@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class CourseHandler :
+class CourseController :
     CrudApiBase() {
     override val path: String
         get() = "/course"
