@@ -32,20 +32,22 @@ class UserController : CrudApiBase() {
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
         val param = ctx.paramJsonMap()
-        arrayOf("email", "hashedPassword", "nickname", "startYear", "group").forEach { key ->
+        arrayOf("email", "hashedPassword", "nickname", "startYear", "group", "verificationCode").forEach { key ->
             if (param[key] == null) {
                 return missingParamError(key)
             }
         }
 
-        val nickNameDec = param["nickname"]!!
+        if (param["verificationCode"] != EmailVerificationController.tempCodes[param["email"]!!]?.code) {
+            return error("Wrong verification code!")
+        }
 
         return try {
             transaction {
                 User.new {
                     email = param["email"]!!
                     hashedPassword = param["hashedPassword"]!!
-                    nickname = nickNameDec
+                    nickname = param["nickname"]!!
                     startYear = param["startYear"]!!
                     group = param["group"]!!
                 }

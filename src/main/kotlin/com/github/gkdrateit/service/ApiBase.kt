@@ -92,6 +92,10 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, "Invalid JWT", null)
     }
 
+    fun error(detail: String = ""): ApiResponse<String> {
+        return ApiResponse(ResponseStatus.FAIL, detail, null)
+    }
+
     fun Context.paramJsonMap(): Map<String, String> {
         return this.bodyAsClass<HashMap<String, String>>()
     }
