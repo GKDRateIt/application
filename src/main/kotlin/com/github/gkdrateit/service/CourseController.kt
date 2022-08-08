@@ -4,6 +4,8 @@ import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.orWhere
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -49,30 +51,30 @@ class CourseController :
     override fun handleRead(ctx: Context): ApiResponse<*> {
         val param = ctx.paramJsonMap()
         try {
-            val query = Courses.selectAll()
+            val query = Courses.select { Courses.id eq -1 }
             param["courseId"]?.let {
-                query.andWhere { Courses.id eq it.toInt() }
+                query.orWhere { Courses.id eq it.toInt() }
             }
             param["code"]?.let {
-                query.andWhere { Courses.code eq it }
+                query.orWhere { Courses.code eq it }
             }
             param["codeSeq"]?.let {
-                query.andWhere { Courses.codeSeq eq it }
+                query.orWhere { Courses.codeSeq eq it }
             }
             param["name"]?.let {
-                query.andWhere { Courses.name like "$it%" }
+                query.orWhere { Courses.name like "$it%" }
             }
             param["teacherId"]?.let {
-                query.andWhere { Courses.teacherId eq it.toInt() }
+                query.orWhere { Courses.teacherId eq it.toInt() }
             }
             param["semester"]?.let {
-                query.andWhere { Courses.semester eq it }
+                query.orWhere { Courses.semester eq it }
             }
             param["credit"]?.let {
-                query.andWhere { Courses.credit eq it.toBigDecimal() }
+                query.orWhere { Courses.credit eq it.toBigDecimal() }
             }
             param["degree"]?.let {
-                query.andWhere { Courses.degree eq it.toInt() }
+                query.orWhere { Courses.degree eq it.toInt() }
             }
             transaction {
                 query.map {

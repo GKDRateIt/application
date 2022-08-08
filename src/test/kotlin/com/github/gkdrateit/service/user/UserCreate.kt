@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import com.github.gkdrateit.service.ApiServer
+import com.github.gkdrateit.service.EmailVerificationController
 import io.javalin.testtools.JavalinTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
@@ -33,9 +34,11 @@ internal class UserCreate {
                 User.find { Users.nickname eq nickNameRaw }.empty()
             }
         }
+        EmailVerificationController.tempCodes["test_$randStr@ucas.ac.cn"] = EmailVerificationController.Code("111111")
         val postBody = hashMapOf(
             "_action" to "create",
             "email" to "test_$randStr@ucas.ac.cn",
+            "verificationCode" to "111111",
             "hashedPassword" to "123456",
             "nickname" to nickNameRaw,
             "startYear" to "2020",

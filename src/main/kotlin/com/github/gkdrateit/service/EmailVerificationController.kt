@@ -14,7 +14,9 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 class EmailVerificationController : CrudApiBase() {
-    data class Code(val code: String, val created: Long)
+    data class Code(val code: String, val created: Long) {
+        constructor(code: String) : this(code, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+    }
 
     // Verification codes are not stored into databases.
     companion object {
@@ -53,7 +55,7 @@ class EmailVerificationController : CrudApiBase() {
         }
 
         val code = (1..6).map { ('0'..'9').random() }.joinToString("")
-        tempCodes[email] = Code(code, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+        tempCodes[email] = Code(code)
         logger.info("Create code $code for $email")
 
         // Send email verification code.
