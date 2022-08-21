@@ -12,11 +12,14 @@ object Config {
 
     val port: Int by lazy { configJson["port"]!! as Int }
 
-    // TODO: Replace hard coded secret with a real one
     val algorithm: Algorithm by lazy { Algorithm.HMAC256(configJson["signSecret"]!! as String) }
 
     val maintainerEmailAddr: String by lazy { configJson["maintainerEmailAddr"]!! as String }
     val maintainerEmailPassword: String by lazy { configJson["maintainerEmailPassword"]!! as String }
     val maintainerEmailSmtpHostName: String by lazy { configJson["maintainerEmailSmtpHostName"]!! as String }
     val maintainerEmailSmtpHostPort: Int by lazy { configJson["maintainerEmailSmtpHostPort"]!! as Int }
+
+    val databaseURL: String by lazy { configJson["databaseURL"]!! as String }
+    val databaseUser: String by lazy { configJson["databaseUser"]!! as String }
+    val databasePassword: String by lazy { configJson["databasePassword"]!! as String }
 }
