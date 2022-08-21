@@ -3,11 +3,11 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.6.21"
+    kotlin("plugin.serialization") version "1.7.10"
 }
 
 group = "com.github.gkdrateit"
-version = "1.0-SNAPSHOT"
+version = "1.0.0-alpha"
 
 repositories {
     mavenCentral()

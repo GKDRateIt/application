@@ -4,13 +4,14 @@ import com.github.gkdrateit.config.Config
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
-import javax.mail.*
-import javax.mail.internet.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import javax.mail.*
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 
 class EmailVerificationController : CrudApiBase() {

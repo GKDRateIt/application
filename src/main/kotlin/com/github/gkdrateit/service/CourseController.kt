@@ -2,8 +2,10 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.*
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.orWhere
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.upperCase
 
 class CourseController :
     CrudApiBase() {

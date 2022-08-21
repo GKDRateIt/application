@@ -1,13 +1,11 @@
 package com.github.gkdrateit.service
 
 import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import com.github.gkdrateit.config.Config
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
