@@ -13,7 +13,7 @@ class ReviewController : CrudApiBase() {
     override val path: String
         get() = "/review"
 
-    private val zoneOffset = ZoneOffset.ofHours(0)
+    private val zoneOffset = ZoneOffset.UTC
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
         val param = ctx.paramJsonMap()

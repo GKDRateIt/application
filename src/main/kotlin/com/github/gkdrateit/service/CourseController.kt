@@ -1,12 +1,8 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.Course
-import com.github.gkdrateit.database.Courses
+import com.github.gkdrateit.database.*
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.orWhere
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class CourseController :
@@ -50,6 +46,7 @@ class CourseController :
 
     override fun handleRead(ctx: Context): ApiResponse<*> {
         val param = ctx.paramJsonMap()
+        val result = mutableListOf<CourseModel>()
         try {
             val query = Courses.select { Courses.id eq -1 }
             param["courseId"]?.let {
@@ -62,7 +59,7 @@ class CourseController :
                 query.orWhere { Courses.codeSeq eq it }
             }
             param["name"]?.let {
-                query.orWhere { Courses.name like "$it%" }
+                query.orWhere { Courses.name.upperCase() like "$it%".uppercase() }
             }
             param["teacherId"]?.let {
                 query.orWhere { Courses.teacherId eq it.toInt() }
@@ -81,8 +78,20 @@ class CourseController :
                     Course.wrapRow(it).toModel()
                 }
             }.let {
-                return successReply(it)
+                result.addAll(it)
             }
+            param["teacherName"]?.let {
+                transaction {
+                    Teacher.find { Teachers.name.upperCase() like "$it%".uppercase() }.map { it.toModel() }
+                }.forEach {
+                    transaction {
+                        Course.find { Courses.teacherId eq it.teacherId }.map { it.toModel() }
+                    }.let {
+                        result.addAll(it)
+                    }
+                }
+            }
+            return successReply(result)
         } catch (e: Throwable) {
             return databaseError(e.message ?: "")
         }

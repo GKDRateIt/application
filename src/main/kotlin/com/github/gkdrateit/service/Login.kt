@@ -7,6 +7,9 @@ import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class Login : ApiBase() {
     override val method: HttpMethod
@@ -36,6 +39,7 @@ class Login : ApiBase() {
                 .withAudience("GKDRateIt")
                 .withIssuer("GKDRateIt")
                 .withClaim("email", userEmail)
+                .withExpiresAt(LocalDateTime.now().plusDays(7).toInstant(ZoneOffset.UTC))
                 .sign(Config.algorithm)!!
             ctx.json(successReply(jwt))
         } catch (e: Throwable) {
