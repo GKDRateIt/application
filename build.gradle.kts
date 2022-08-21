@@ -10,8 +10,9 @@ group = "com.github.gkdrateit"
 version = "1.0.0-alpha"
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    maven(url = "https://maven.aliyun.com/repository/public/")
+    mavenCentral()
 }
 
 val exposedVersion: String by project
