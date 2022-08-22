@@ -1,9 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+    java
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "com.github.gkdrateit"
@@ -55,4 +58,15 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+}
+
+tasks.withType<ShadowJar> {
+    archiveFileName.set("rate-it-backend-${rootProject.version}-shadow.jar")
+    manifest {
+        attributes(mapOf("Main-Class" to "com.github.gkdrateit.MainKt"))
+    }
+}
+
+tasks.build {
+    dependsOn("shadowJar")
 }
