@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Parse Version
         run: |
-          echo "BUILD_VER=$(cat ./build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
+          echo "BUILD_VER=$(cat $GITHUB_WORKSPACE/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
           echo ${{ env.BUILD_VER }}
           [[ ${{ env.BUILD_VER }} == "" ]] || exit 1
       - name: Set up JDK 17
@@ -49,6 +49,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          context: .
+          context: $GITHUB_WORKSPACE
           build-args: BUILD_VER=${{ env.BUILD_VER }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/back:${{ env.BUILD_VER }}
