@@ -38,6 +38,7 @@ class CourseController :
                     semester = param["semester"]!!
                     credit = param["credit"]!!.toBigDecimal()
                     degree = param["degree"]!!.toInt()
+                    status = 0
                 }
             }
             return success()
@@ -50,7 +51,7 @@ class CourseController :
         val param = ctx.paramJsonMap()
         val result = mutableListOf<CourseModel>()
         try {
-            val query = Courses.select { Courses.id eq -1 }
+            val query = Courses.select { Courses.status eq 1 }
             param["courseId"]?.let {
                 query.orWhere { Courses.id eq it.toInt() }
             }

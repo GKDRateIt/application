@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import java.nio.file.Paths
 
 object Config {
-    private const val configFileName = "config.json"
+    var configFileName = "config.json"
     private val configJson: Map<*, *> by lazy {
         ObjectMapper().readValue(Paths.get(configFileName).toFile(), Map::class.java)
     }
