@@ -23,7 +23,7 @@ jobs:
       - name: Parse Version
         run: |
           echo ${{ github.workspace }} 
-          echo "BUILD_VER=$(cat ${{ github.workspace }} /build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
+          echo "BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
           echo ${{ env.BUILD_VER }}
           [[ ${{ env.BUILD_VER }} == "" ]] || exit 1
       - name: Set up JDK 17
