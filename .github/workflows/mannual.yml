@@ -24,9 +24,10 @@ jobs:
         run: |
           echo ${{ github.workspace }} 
           cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g"
-          echo "BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
-          echo ${{ env.BUILD_VER }}
-          [[ ${{ env.BUILD_VER }} == "" ]] || exit 1
+          echo "DETECT_BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")"
+          echo "DETECT_BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
+          echo $DETECT_BUILD_VER
+          [[ "$DETECT_BUILD_VER" != "" ]] || exit 1
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -52,5 +53,5 @@ jobs:
         with:
           push: true
           context: ${{ github.workspace }} 
-          build-args: BUILD_VER=${{ env.BUILD_VER }}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/back:${{ env.BUILD_VER }}
+          build-args: BUILD_VER=$DETECT_BUILD_VER
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/back:$DETECT_BUILD_VER
