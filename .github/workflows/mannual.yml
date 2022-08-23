@@ -22,12 +22,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Parse Version
         run: |
-          echo ${{ github.workspace }} 
-          cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g"
           echo "DETECT_BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")"
           echo "DETECT_BUILD_VER=$(cat ${{ github.workspace }}/build.gradle.kts | grep "version = " | sed -E "s/(version| |=|\")//g")" >> $GITHUB_ENV
           echo $DETECT_BUILD_VER
-          [[ "$DETECT_BUILD_VER" != "" ]] || exit 1
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
