@@ -42,23 +42,30 @@ class UserController : CrudApiBase() {
             return error("Wrong verification code!")
         }
 
-        return try {
-            transaction {
-                User.new {
-                    email = param["email"]!!
-                    hashedPassword = param["hashedPassword"]!!
-                    nickname = param["nickname"]!!
-                    startYear = param["startYear"]!!
-                    group = param["group"]!!
-                }
+        try {
+            val notRegistered = transaction {
+                User.find { Users.email eq param["email"]!! }.count() == 0L
             }
-            success()
+            return if (notRegistered) {
+                transaction {
+                    User.new {
+                        email = param["email"]!!
+                        hashedPassword = param["hashedPassword"]!!
+                        nickname = param["nickname"]!!
+                        startYear = param["startYear"]!!
+                        group = param["group"]!!
+                    }
+                }
+                success()
+            } else {
+                userRegisteredError()
+            }
         } catch (e: Throwable) {
-            databaseError(e.message ?: "")
+            return databaseError(e.message ?: "")
         }
     }
 
-    override fun handleRead(ctx: Context): ApiResponse<List<UserModelSimplified>> {
+    override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val param = ctx.paramJsonMap()
         val query = Users.selectAll()
         param["userId"]?.let {
@@ -72,10 +79,13 @@ class UserController : CrudApiBase() {
             val postfix = it.substringAfter('@')
             query.andWhere { Users.email like "$prefix%@$postfix" }
         }
+        val totalCount = transaction { query.count() }
+        val pagination = getPaginationInfoOrDefault(param)
+        query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { User.wrapRow(it).toModel().hidePassword() }
         }.let {
-            return successReply(it)
+            return successReply(it, totalCount, pagination)
         }
     }
 
