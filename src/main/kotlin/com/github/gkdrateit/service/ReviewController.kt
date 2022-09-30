@@ -2,9 +2,7 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.*
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -37,7 +35,7 @@ class ReviewController : CrudApiBase() {
             transaction {
                 User.find { Users.email eq it }.firstOrNull()?.toModel()
             }?.userId
-        } ?: return illegalParamError(listOf("userId", "email"), extraInfo="userId or email is required")
+        } ?: return illegalParamError(listOf("userId", "email"), extraInfo = "userId or email is required")
 
         try {
             transaction {
@@ -65,7 +63,7 @@ class ReviewController : CrudApiBase() {
         }
     }
 
-    override fun handleRead(ctx: Context): ApiResponse<List<ReviewModel>> {
+    override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val query = Reviews.selectAll()
         val param = ctx.paramJsonMap()
         param["courseId"]?.let {
@@ -74,10 +72,13 @@ class ReviewController : CrudApiBase() {
         param["userId"]?.let {
             query.andWhere { Reviews.userId eq it.toInt() }
         }
+        val totalCount = transaction { query.count() }
+        val pagination = getPaginationInfoOrDefault(param)
+        query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { Review.wrapRow(it).toModel() }
         }.let {
-            return successReply(it)
+            return successReply(it, totalCount, pagination)
         }
     }
 

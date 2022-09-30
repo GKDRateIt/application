@@ -39,7 +39,7 @@ class TeacherController : CrudApiBase() {
         }
     }
 
-    override fun handleRead(ctx: Context): ApiResponse<List<TeacherModel>> {
+    override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val query = Teachers.selectAll()
         val param = ctx.paramJsonMap()
         param["teacherId"]?.let {
@@ -48,10 +48,13 @@ class TeacherController : CrudApiBase() {
         param["name"]?.let {
             query.andWhere { Teachers.name like "$it%" }
         }
+        val totalCount = transaction { query.count() }
+        val pagination = getPaginationInfoOrDefault(param)
+        query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { Teacher.wrapRow(it).toModel() }
         }.let {
-            return successReply(it)
+            return successReply(it, totalCount, pagination)
         }
     }
 

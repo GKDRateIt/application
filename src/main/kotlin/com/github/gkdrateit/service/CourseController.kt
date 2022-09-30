@@ -47,7 +47,7 @@ class CourseController :
         }
     }
 
-    override fun handleRead(ctx: Context): ApiResponse<*> {
+    override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val param = ctx.paramJsonMap()
         val result = mutableListOf<CourseModel>()
         try {
@@ -76,6 +76,9 @@ class CourseController :
             param["degree"]?.let {
                 query.orWhere { Courses.degree eq it.toInt() }
             }
+            val totalCount = transaction { query.count() }
+            val pagination = getPaginationInfoOrDefault(param)
+            query.limit(pagination.limit, pagination.offset)
             transaction {
                 query.map {
                     Course.wrapRow(it).toModel()
@@ -94,7 +97,7 @@ class CourseController :
                     }
                 }
             }
-            return successReply(result)
+            return successReply(result, totalCount, pagination)
         } catch (e: Throwable) {
             return databaseError(e.message ?: "")
         }

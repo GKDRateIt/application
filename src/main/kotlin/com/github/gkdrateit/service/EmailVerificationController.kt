@@ -29,6 +29,8 @@ class EmailVerificationController : CrudApiBase() {
         }
         val tempCodes = ConcurrentHashMap<String, Code>()
 
+        const val UCAS_EMAIL_SUFFIX = "@mails.ucas.ac.cn"
+
         init {
             props["mail.smtp.auth"] = "true"
             props["mail.smtp.starttls.enable"] = "true"
@@ -48,6 +50,9 @@ class EmailVerificationController : CrudApiBase() {
         }
 
         val email = param["email"]!!
+        if (!email.endsWith(UCAS_EMAIL_SUFFIX)) {
+            return emailIllegalError()
+        }
 
         if (!transaction {
                 User.find { Users.email eq email }.empty()
@@ -79,18 +84,7 @@ class EmailVerificationController : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context): ApiResponse<*> {
-        val param = ctx.paramJsonMap()
-        arrayOf("email", "code").forEach { key ->
-            if (param[key] == null) {
-                return missingParamError(key)
-            }
-        }
-        val email = param["email"]!!
-        val code = param["code"]!!
-        if (code != tempCodes[email]?.code) {
-            return error("Wrong verification code!")
-        }
-        return success()
+        return notImplementedError()
     }
 
     override fun handleUpdate(ctx: Context): ApiResponse<*> {
