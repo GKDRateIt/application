@@ -1,6 +1,7 @@
 package com.github.gkdrateit.service
 
 import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -164,7 +165,7 @@ abstract class CrudApiBase : ApiBase() {
     abstract fun handleDelete(ctx: Context): ApiResponse<*>
 
     override fun handle(ctx: Context) {
-        logger.info("Received request from ${ctx.req.remoteAddr}:${ctx.req.remotePort}")
+        logger.info("Received request from ${ctx.req().remoteAddr}:${ctx.req().remotePort}")
         val param = ctx.paramJsonMap()
         when (param["_action"]?.uppercase()) {
             null -> missingParamError("_action")

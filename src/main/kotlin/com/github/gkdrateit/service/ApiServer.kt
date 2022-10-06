@@ -8,9 +8,13 @@ import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.post
 
 class ApiServer {
-    val app: Javalin = Javalin.create {
-        it.enableCorsForAllOrigins()
-        it.enableDevLogging()
+    val app: Javalin = Javalin.create { config ->
+        config.plugins.enableDevLogging()
+        config.plugins.enableCors { cors ->
+            cors.add {
+                it.anyHost()
+            }
+        }
     }
 
     private val handlers = listOf(

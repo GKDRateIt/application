@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.github.gkdrateit"
-version = "1.0.0-alpha"
+version = "0.1.0"
 
 repositories {
     mavenLocal()
@@ -25,11 +25,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
     // slg4j
-    implementation("org.slf4j:slf4j-simple:2.0.1")
+    implementation("org.slf4j:slf4j-simple:2.0.3")
     // javalin
-    implementation("io.javalin:javalin:4.6.4")
+    implementation("io.javalin:javalin:5.0.1")
     // jackson
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
     // guava
     implementation("com.google.guava:guava:31.1-jre")
@@ -46,7 +46,7 @@ dependencies {
     implementation("com.sun.mail:javax.mail:1.6.2")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.javalin:javalin-testtools:4.6.4")
+    testImplementation("io.javalin:javalin-testtools:5.0.1")
 }
 
 tasks.test {
