@@ -11,6 +11,6 @@ fun main(args: Array<String>) = runBlocking {
         Config.configFileName = args[0]
     }
     val apiServerJob = launch { ApiServer().start() }
-    val logger = LoggerFactory.getLogger("com.github.gkdrateit.main")
+//    val logger = LoggerFactory.getLogger("com.github.gkdrateit.main")
     apiServerJob.join()
 }

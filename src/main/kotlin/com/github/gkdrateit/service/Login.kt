@@ -17,7 +17,7 @@ class Login : ApiBase() {
 
     override fun handle(ctx: Context) {
         try {
-            val auth = ctx.basicAuthCredentials()
+            val auth = ctx.basicAuthCredentials()!!
             val userEmail = auth.username
             val hashedPassword = auth.password
             transaction {
