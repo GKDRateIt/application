@@ -1,7 +1,6 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Teacher
-import com.github.gkdrateit.database.TeacherModel
 import com.github.gkdrateit.database.Teachers
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere

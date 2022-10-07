@@ -1,8 +1,13 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.*
+import com.github.gkdrateit.database.Review
+import com.github.gkdrateit.database.Reviews
+import com.github.gkdrateit.database.User
+import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
