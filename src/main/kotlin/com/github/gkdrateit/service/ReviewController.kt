@@ -5,9 +5,7 @@ import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -77,6 +75,16 @@ class ReviewController : CrudApiBase() {
         param["userId"]?.let {
             query.andWhere { Reviews.userId eq it.toInt() }
         }
+        param["email"]?.let {
+            logger.info("Review query email: $it")
+            query
+                .adjustColumnSet { innerJoin(Users, { Reviews.userId }, { Users.id }) }
+                .adjustSlice { slice(fields + Users.columns) }
+                .andWhere {
+                    Users.email eq it
+                }
+        }
+
         val totalCount = transaction { query.count() }
         val pagination = getPaginationInfoOrDefault(param)
         query.limit(pagination.limit, pagination.offset)
