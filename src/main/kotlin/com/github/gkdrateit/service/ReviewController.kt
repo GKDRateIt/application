@@ -67,20 +67,19 @@ class ReviewController : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val query = Reviews.selectAll()
+        val query = Reviews.select { Reviews.id eq -1 }
         val param = ctx.paramJsonMap()
         param["courseId"]?.let {
-            query.andWhere { Reviews.courseId eq it.toInt() }
+            query.orWhere { Reviews.courseId eq it.toInt() }
         }
         param["userId"]?.let {
-            query.andWhere { Reviews.userId eq it.toInt() }
+            query.orWhere { Reviews.userId eq it.toInt() }
         }
         param["email"]?.let {
-            logger.info("Review query email: $it")
             query
                 .adjustColumnSet { innerJoin(Users, { Reviews.userId }, { Users.id }) }
                 .adjustSlice { slice(fields + Users.columns) }
-                .andWhere {
+                .orWhere {
                     Users.email eq it
                 }
         }
