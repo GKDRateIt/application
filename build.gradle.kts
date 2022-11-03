@@ -7,6 +7,7 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.sonarqube") version "3.5.0.2730"
 }
 
 group = "com.github.gkdrateit"
@@ -16,6 +17,14 @@ repositories {
     mavenLocal()
     maven(url = "https://maven.aliyun.com/repository/public/")
     mavenCentral()
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "GKDRateIt_back-end")
+        property("sonar.organization", "gkdrateit")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 val exposedVersion: String by project
