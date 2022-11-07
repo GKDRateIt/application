@@ -92,7 +92,8 @@ class ReviewController : CrudApiBase() {
         val pagination = getPaginationInfoOrDefault(param)
         query.limit(pagination.limit, pagination.offset)
         transaction {
-            query.map { Review.wrapRow(it).toModel() }
+            query.map { Review.wrapRow(it).let{
+                it.toModel(transaction{User.find{Users.id eq it.userId}}?.elementAt(0)?.nickname)}}
         }.let {
             return successReply(it, totalCount, pagination)
         }

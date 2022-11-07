@@ -24,6 +24,7 @@ data class ReviewModel(
     val commentText: String,
     val myGrade: String?,
     val myMajor: Int?,
+    val userName: String?,
 )
 
 object Reviews : IntIdTable(columnName = "r_review_id") {
@@ -55,7 +56,7 @@ class Review(id: EntityID<Int>) : IntEntity(id) {
     var myGrade by Reviews.myGrade
     var myMajor by Reviews.myMajor
 
-    fun toModel(): ReviewModel {
+    fun toModel(nickname:String?): ReviewModel {
         return ReviewModel(
             id.value,
             courseId,
@@ -68,7 +69,8 @@ class Review(id: EntityID<Int>) : IntEntity(id) {
             workload,
             commentText,
             myGrade,
-            myMajor
+            myMajor,
+            nickname
         )
     }
 }
