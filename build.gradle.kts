@@ -16,6 +16,7 @@ apply(plugin = "kotlinx-atomicfu")
 
 plugins {
     java
+    jacoco
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -91,4 +92,15 @@ tasks.withType<ShadowJar> {
 
 tasks.build {
     dependsOn("shadowJar")
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required.set(true)
+    }
 }
