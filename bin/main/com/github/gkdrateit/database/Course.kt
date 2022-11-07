@@ -17,6 +17,7 @@ data class CourseModel(
 //    @Serializable(with = BigDecimalSerializer::class)
     val credit: BigDecimal,
     val degree: Int,
+    val category: String,
     val status: Int,
 )
 
@@ -28,6 +29,7 @@ object Courses : IntIdTable(columnName = "c_course_id") {
     val semester = varchar("c_semester", 10)
     val credit = decimal("c_credit", 4, 2)
     val degree = integer("c_degree")
+    val category = varchar("c_category",15)
     val status = integer("c_status")
     init {
         index(true, code, codeSeq, teacherId)
@@ -44,9 +46,10 @@ class Course(id: EntityID<Int>) : IntEntity(id) {
     var semester by Courses.semester
     var credit by Courses.credit
     var degree by Courses.degree
+    var category by Courses.category
     var status by Courses.status
 
     fun toModel(): CourseModel {
-        return CourseModel(id.value, code, codeSeq, name, teacherId, semester, credit, degree, status)
+        return CourseModel(id.value, code, codeSeq, name, teacherId, semester, credit, degree, category, status)
     }
 }
