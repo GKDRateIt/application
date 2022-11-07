@@ -28,7 +28,6 @@ version = "0.1.0"
 
 repositories {
     mavenLocal()
-    maven(url = "https://maven.aliyun.com/repository/public/")
     mavenCentral()
 }
 
