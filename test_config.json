@@ -1,0 +1,12 @@
+{
+  "port": 8080,
+  "signSecret": "test_secret_gkd_rate_it",
+  "maintainerEmailAddr": "ucas.rate.it@outlook.com",
+  "maintainerEmailPassword": "???",
+  "maintainerEmailSmtpHostName": "smtp-mail.outlook.com",
+  "maintainerEmailSmtpHostPort": 587,
+  "databaseURL": "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+  "databaseDriver": "org.h2.Driver",
+  "databaseUser": "sa",
+  "databasePassword": ""
+}

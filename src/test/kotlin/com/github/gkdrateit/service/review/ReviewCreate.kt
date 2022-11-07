@@ -9,7 +9,6 @@ import io.javalin.testtools.JavalinTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -60,11 +59,6 @@ internal class ReviewCreate : TestBase() {
         assertFalse {
             transaction {
                 Review.find { Reviews.commentText eq textRaw }.empty()
-            }
-        }
-        transaction {
-            Reviews.deleteWhere {
-                Reviews.commentText eq textRaw
             }
         }
     }

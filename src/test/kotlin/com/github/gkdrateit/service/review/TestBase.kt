@@ -2,6 +2,7 @@ package com.github.gkdrateit.service.review
 
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Teacher
+import com.github.gkdrateit.database.TestDbAdapter
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.service.ApiServer
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,7 +16,12 @@ internal abstract class TestBase {
     protected val apiServer = ApiServer()
 
     @BeforeAll
-    fun prepareTable() {
+    fun setup() {
+        TestDbAdapter.setup()
+        prepareTable()
+    }
+
+    private fun prepareTable() {
         if (transaction { Teacher.all().empty() }) {
             transaction {
                 Teacher.new {
@@ -35,6 +41,7 @@ internal abstract class TestBase {
                     semester = "spring"
                     credit = BigDecimal.valueOf(1.5)
                     degree = 0
+                    status = 1
                 }
             }
         }

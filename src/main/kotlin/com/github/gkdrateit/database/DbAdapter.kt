@@ -9,7 +9,7 @@ object DbAdapter {
     private val db by lazy {
         Database.connect(
             url = Config.databaseURL,
-            driver = "org.postgresql.Driver",
+            driver = Config.databaseDriver,
             user = Config.databaseUser,
             password = Config.databasePassword,
         )

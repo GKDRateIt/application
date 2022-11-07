@@ -1,6 +1,18 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.18.5")
+    }
+}
+
+apply(plugin = "kotlinx-atomicfu")
 
 plugins {
     java
@@ -36,14 +48,14 @@ dependencies {
     // slg4j
     implementation("org.slf4j:slf4j-simple:2.0.3")
     // javalin
-    implementation("io.javalin:javalin:5.0.1")
+    implementation("io.javalin:javalin:5.1.3")
     // jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
     // guava
     implementation("com.google.guava:guava:31.1-jre")
     // java web token
-    implementation("com.auth0:java-jwt:4.0.0")
+    implementation("com.auth0:java-jwt:4.2.1")
     // kotlin orm
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -55,7 +67,8 @@ dependencies {
     implementation("com.sun.mail:javax.mail:1.6.2")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.javalin:javalin-testtools:5.0.1")
+    testImplementation("io.javalin:javalin-testtools:5.1.3")
+    testImplementation("com.h2database:h2:2.1.214")
 }
 
 tasks.test {

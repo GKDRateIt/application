@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.util.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -58,11 +59,6 @@ internal class CourseCreate : TestBase() {
         assertFalse {
             transaction {
                 Course.find { Courses.name eq nameRaw }.empty()
-            }
-        }
-        transaction {
-            Courses.deleteWhere {
-                Courses.name eq nameRaw
             }
         }
     }
