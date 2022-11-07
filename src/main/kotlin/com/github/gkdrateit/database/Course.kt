@@ -29,8 +29,9 @@ object Courses : IntIdTable(columnName = "c_course_id") {
     val semester = varchar("c_semester", 10)
     val credit = decimal("c_credit", 4, 2)
     val degree = integer("c_degree")
-    val category = varchar("c_category",15)
+    val category = varchar("c_category", 15)
     val status = integer("c_status")
+
     init {
         index(true, code, codeSeq, teacherId)
     }

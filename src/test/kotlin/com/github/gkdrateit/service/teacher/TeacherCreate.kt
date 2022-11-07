@@ -61,7 +61,7 @@ internal class TeacherCreate {
         }
         transaction {
             Teachers.deleteWhere {
-                Teachers.name eq nameRaw
+                name eq nameRaw
             }
         }
     }

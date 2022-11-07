@@ -15,7 +15,7 @@ class CourseController :
 
     override fun handleCreate(ctx: Context): ApiResponse<*> {
         val param = ctx.paramJsonMap()
-        arrayOf("code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
+        arrayOf("code", "name", "teacherId", "semester", "credit", "degree", "category").forEach { key ->
             if (param[key] == null) {
                 return missingParamError(key)
             }
@@ -38,7 +38,8 @@ class CourseController :
                     semester = param["semester"]!!
                     credit = param["credit"]!!.toBigDecimal()
                     degree = param["degree"]!!.toInt()
-                    status = 0
+                    status = 1
+                    category = param["category"]!!
                 }
             }
             return success()
@@ -75,6 +76,9 @@ class CourseController :
             }
             param["degree"]?.let {
                 query.orWhere { Courses.degree eq it.toInt() }
+            }
+            param["category"]?.let {
+                query.orWhere { Courses.category eq it }
             }
             val totalCount = transaction { query.count() }
             val pagination = getPaginationInfoOrDefault(param)

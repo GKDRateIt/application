@@ -71,7 +71,7 @@ internal class UserCreate {
         }
         transaction {
             Users.deleteWhere {
-                Users.nickname eq nickNameRaw
+                nickname eq nickNameRaw
             }
         }
     }

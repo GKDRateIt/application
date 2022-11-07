@@ -8,13 +8,11 @@ import io.javalin.testtools.JavalinTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.util.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -43,7 +41,8 @@ internal class CourseCreate : TestBase() {
             "teacherId" to qTeacherId.toString(),
             "semester" to "spring",
             "credit" to BigDecimal.valueOf(1.5).toString(),
-            "degree" to "0"
+            "degree" to "0",
+            "category" to "unknown"
         )
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")

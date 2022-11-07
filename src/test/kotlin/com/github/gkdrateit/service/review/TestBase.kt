@@ -42,6 +42,7 @@ internal abstract class TestBase {
                     credit = BigDecimal.valueOf(1.5)
                     degree = 0
                     status = 1
+                    category = "unknown"
                 }
             }
         }

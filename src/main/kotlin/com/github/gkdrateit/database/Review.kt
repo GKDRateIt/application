@@ -56,7 +56,7 @@ class Review(id: EntityID<Int>) : IntEntity(id) {
     var myGrade by Reviews.myGrade
     var myMajor by Reviews.myMajor
 
-    fun toModel(nickname:String?): ReviewModel {
+    fun toModel(nickname: String?): ReviewModel {
         return ReviewModel(
             id.value,
             courseId,

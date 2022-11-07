@@ -6,10 +6,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) = runBlocking {
-    if (args.isNotEmpty()) {
-        Config.configFileName = args[0]
-    }
+//    if (args.isNotEmpty()) {
+//        Config.configFileName = args[0]
+//    }
     val apiServerJob = launch { ApiServer().start() }
-//    val logger = LoggerFactory.getLogger("com.github.gkdrateit.main")
     apiServerJob.join()
 }
