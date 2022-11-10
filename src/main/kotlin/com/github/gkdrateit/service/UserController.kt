@@ -31,29 +31,28 @@ class UserController : CrudApiBase() {
         get() = "/user"
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
-        val param = ctx.paramJsonMap()
         arrayOf("email", "hashedPassword", "nickname", "startYear", "group", "verificationCode").forEach { key ->
-            if (param[key] == null) {
+            if (ctx.formParam(key) == null) {
                 return missingParamError(key)
             }
         }
 
-        if (param["verificationCode"] != EmailVerificationController.tempCodes[param["email"]!!]?.code) {
+        if (ctx.formParam("verificationCode") != EmailVerificationController.tempCodes[ctx.formParam("email")!!]?.code) {
             return error("Wrong verification code!")
         }
 
         try {
             val notRegistered = transaction {
-                User.find { Users.email eq param["email"]!! }.count() == 0L
+                User.find { Users.email eq ctx.formParam("email")!! }.count() == 0L
             }
             return if (notRegistered) {
                 transaction {
                     User.new {
-                        email = param["email"]!!
-                        hashedPassword = param["hashedPassword"]!!
-                        nickname = param["nickname"]!!
-                        startYear = param["startYear"]!!
-                        group = param["group"]!!
+                        email = ctx.formParam("email")!!
+                        hashedPassword = ctx.formParam("hashedPassword")!!
+                        nickname = ctx.formParam("nickname")!!
+                        startYear = ctx.formParam("startYear")!!
+                        group = ctx.formParam("group")!!
                     }
                 }
                 success()
@@ -66,21 +65,20 @@ class UserController : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val param = ctx.paramJsonMap()
         val query = Users.selectAll()
-        param["userId"]?.let {
-            query.andWhere { Users.id eq it.toInt() }
+        ctx.formParamAsNullable<Int>("userId")?.let {
+            query.andWhere { Users.id eq it }
         }
-        param["nickname"]?.let {
+        ctx.formParam("nickname")?.let {
             query.andWhere { Users.nickname like "$it%" }
         }
-        param["email"]?.let {
+        ctx.formParam("email")?.let {
             val prefix = it.substringBefore('@')
             val postfix = it.substringAfter('@')
             query.andWhere { Users.email like "$prefix%@$postfix" }
         }
         val totalCount = transaction { query.count() }
-        val pagination = getPaginationInfoOrDefault(param)
+        val pagination = getPaginationInfoOrDefault(ctx)
         query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { User.wrapRow(it).toModel().hidePassword() }
