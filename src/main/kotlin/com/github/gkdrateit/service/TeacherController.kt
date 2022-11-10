@@ -13,13 +13,12 @@ class TeacherController : CrudApiBase() {
         get() = "/teacher"
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
-        val param = ctx.paramJsonMap()
-        if (param["name"] == null) {
+        if (ctx.formParam("name") == null) {
             return missingParamError("name")
         }
 
         val nameDec = try {
-            String(base64Decoder.decode(param["name"]!!))
+            String(base64Decoder.decode(ctx.formParam("name")!!))
         } catch (e: IllegalArgumentException) {
             return base64Error("name")
         }
@@ -29,7 +28,7 @@ class TeacherController : CrudApiBase() {
             transaction {
                 Teacher.new {
                     name = nameDec
-                    email = param["email"]
+                    email = ctx.formParam("name")!!
                 }
             }
             return success()
@@ -40,15 +39,14 @@ class TeacherController : CrudApiBase() {
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val query = Teachers.selectAll()
-        val param = ctx.paramJsonMap()
-        param["teacherId"]?.let {
-            query.andWhere { Teachers.id eq it.toInt() }
+        ctx.formParamAsNullable<Int>("teacherId")?.let {
+            query.andWhere { Teachers.id eq it }
         }
-        param["name"]?.let {
+        ctx.formParam("name")?.let {
             query.andWhere { Teachers.name like "$it%" }
         }
         val totalCount = transaction { query.count() }
-        val pagination = getPaginationInfoOrDefault(param)
+        val pagination = getPaginationInfoOrDefault(ctx)
         query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { Teacher.wrapRow(it).toModel() }
