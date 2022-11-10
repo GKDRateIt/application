@@ -44,12 +44,7 @@ class EmailVerificationController : CrudApiBase() {
         get() = "email-verification"
 
     override fun handleCreate(ctx: Context): ApiResponse<*> {
-        val param = ctx.paramJsonMap()
-        if (param["email"] == null) {
-            return missingParamError("email")
-        }
-
-        val email = param["email"]!!
+        val email = ctx.formParam("email") ?: return missingParamError("email")
         if (!email.endsWith(UCAS_EMAIL_SUFFIX)) {
             return emailIllegalError()
         }
