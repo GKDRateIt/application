@@ -37,7 +37,7 @@ class CourseController :
                     name = nameDec
                     teacherId = ctx.formParamAsClass<Int>("teacherId").get()
                     semester = ctx.formParam("semester")!!
-                    credit = ctx.formParamAsClass<BigDecimal>("credit").get()
+                    credit = ctx.formParamAsClass<Double>("credit").get().toBigDecimal()
                     degree = ctx.formParamAsClass<Int>("degree").get()
                     status = 1
                     category = ctx.formParam("category")!!
@@ -71,8 +71,8 @@ class CourseController :
             ctx.formParam("semester")?.let {
                 query.orWhere { Courses.semester eq it }
             }
-            ctx.formParamAsNullable<BigDecimal>("credit")?.let {
-                query.orWhere { Courses.credit eq it }
+            ctx.formParamAsNullable<Double>("credit")?.let {
+                query.orWhere { Courses.credit eq it.toBigDecimal() }
             }
             ctx.formParamAsNullable<Int>("degree")?.let {
                 query.orWhere { Courses.degree eq it }
