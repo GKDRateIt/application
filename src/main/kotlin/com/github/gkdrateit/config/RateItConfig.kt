@@ -13,7 +13,7 @@ object RateItConfig {
         return@run if (configFile.exists()) {
             configName
         } else {
-            throw FileNotFoundException("Must provide `config.json` or define config file in jvm system property.")
+            throw FileNotFoundException("Must provide $configName or define config file in jvm system property.")
         }
     }
     private val configJson: Map<*, *> = run {
