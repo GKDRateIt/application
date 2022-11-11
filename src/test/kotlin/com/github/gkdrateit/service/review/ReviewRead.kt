@@ -1,14 +1,12 @@
 package com.github.gkdrateit.service.review
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -41,13 +39,13 @@ internal class ReviewRead : TestBase() {
                 }
             }
         }
-        val postBody = hashMapOf(
-            "_action" to "read",
-            "userId" to qUserId.toString()
-        )
+        val body = FormBody.Builder()
+            .add("_action", "read")
+            .add("userId", qUserId.toString())
+            .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
-            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(body)
             .build()
         client.request(req).use {
             val bodyStr = it.body!!.string()

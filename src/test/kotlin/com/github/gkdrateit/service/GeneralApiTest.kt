@@ -1,10 +1,8 @@
 package com.github.gkdrateit.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,9 +14,10 @@ class GeneralApiTest {
     fun missingActionParam() = JavalinTest.test(apiServer.app) { server, client ->
         val paths = listOf("course", "review", "teacher", "user")
         paths.forEach { path ->
+            val body = FormBody.Builder().build()
             val req = Request.Builder()
                 .url("http://localhost:${server.port()}/api/${path}")
-                .post("{}".toRequestBody("application/json".toMediaTypeOrNull()))
+                .post(body)
                 .build()
             client.request(req).use {
                 assertEquals(it.code, 200)
@@ -37,10 +36,10 @@ class GeneralApiTest {
     fun missingFieldParam() = JavalinTest.test(apiServer.app) { server, client ->
         val paths = listOf("course", "review", "teacher", "user")
         paths.forEach { path ->
-            val postBody = hashMapOf("_action" to "create")
+            val body = FormBody.Builder().add("_action", "create").build()
             val req = Request.Builder()
                 .url("http://localhost:${server.port()}/api/${path}")
-                .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+                .post(body)
                 .build()
             // Do NOT user `client.post` method! It uses wrong serialization schema!
             client.request(req).use {

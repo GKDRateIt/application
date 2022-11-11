@@ -6,18 +6,14 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Paths
 
-object Config {
-    var configFileName = run {
-        val testConfigName = "test_config.json"
-        val prodConfigName = "config.json"
-        val testConfigFile = File(testConfigName)
-        val prodConfigFile = File(prodConfigName)
-        return@run if (testConfigFile.exists()) {
-            testConfigName
-        } else if (prodConfigFile.exists()) {
-            prodConfigName
+object RateItConfig {
+    private var configFileName = run {
+        val configName = System.getProperty("CONFIG_FILE") ?: "config.json"
+        val configFile = File(configName)
+        return@run if (configFile.exists()) {
+            configName
         } else {
-            throw FileNotFoundException("Must provide `test_config.json` or `config.json`")
+            throw FileNotFoundException("Must provide `config.json` or define config file in jvm system property.")
         }
     }
     private val configJson: Map<*, *> = run {

@@ -1,6 +1,6 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.config.RateItConfig
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
@@ -24,7 +24,7 @@ class EmailVerificationController : CrudApiBase() {
         val props = Properties()
         val auth = object : Authenticator() {
             override fun getPasswordAuthentication(): PasswordAuthentication {
-                return PasswordAuthentication(Config.maintainerEmailAddr, Config.maintainerEmailPassword)
+                return PasswordAuthentication(RateItConfig.maintainerEmailAddr, RateItConfig.maintainerEmailPassword)
             }
         }
         val tempCodes = ConcurrentHashMap<String, Code>()
@@ -34,8 +34,8 @@ class EmailVerificationController : CrudApiBase() {
         init {
             props["mail.smtp.auth"] = "true"
             props["mail.smtp.starttls.enable"] = "true"
-            props["mail.smtp.host"] = Config.maintainerEmailSmtpHostName
-            props["mail.smtp.port"] = Config.maintainerEmailSmtpHostPort.toString()
+            props["mail.smtp.host"] = RateItConfig.maintainerEmailSmtpHostName
+            props["mail.smtp.port"] = RateItConfig.maintainerEmailSmtpHostPort.toString()
         }
     }
 
@@ -64,7 +64,7 @@ class EmailVerificationController : CrudApiBase() {
 
         try {
             val msg = MimeMessage(session)
-            msg.setFrom(InternetAddress(Config.maintainerEmailAddr))
+            msg.setFrom(InternetAddress(RateItConfig.maintainerEmailAddr))
             val address = arrayOf(InternetAddress(email))
             msg.setRecipients(Message.RecipientType.TO, address)
             msg.subject = "UCAS Rate It Email Verification"

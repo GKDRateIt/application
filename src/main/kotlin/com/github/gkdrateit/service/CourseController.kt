@@ -7,7 +7,6 @@ import org.jetbrains.exposed.sql.orWhere
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.upperCase
-import java.math.BigDecimal
 
 class CourseController :
     CrudApiBase() {

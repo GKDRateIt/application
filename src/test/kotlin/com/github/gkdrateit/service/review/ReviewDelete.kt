@@ -1,14 +1,12 @@
 package com.github.gkdrateit.service.review
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -49,13 +47,13 @@ internal class ReviewDelete : TestBase() {
                 Reviews.commentText eq "test_review_delete"
             }.first().id.value
         }
-        val postBody = hashMapOf(
-            "_action" to "delete",
-            "reviewId" to deletedId.toString()
-        )
+        val body = FormBody.Builder()
+            .add("_action", "delete")
+            .add("reviewId", deletedId.toString())
+            .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
-            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(body)
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)

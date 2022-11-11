@@ -1,14 +1,12 @@
 package com.github.gkdrateit.service.review
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -33,21 +31,21 @@ internal class ReviewCreate : TestBase() {
             }
         }
 
-        val postBody = hashMapOf(
-            "_action" to "create",
-            "courseId" to courseId.toString(),
-            "userId" to userId.toString(),
-            "createTime" to curTime.toString(),
-            "lastUpdateTime" to curTime.toString(),
-            "overallRecommendation" to "1",
-            "quality" to "1",
-            "difficulty" to "1",
-            "workload" to "1",
-            "commentText" to textRaw
-        )
+        val body = FormBody.Builder()
+            .add("_action", "create")
+            .add("courseId", courseId.toString())
+            .add("userId", userId.toString())
+            .add("createTime", curTime.toString())
+            .add("lastUpdateTime", curTime.toString())
+            .add("overallRecommendation", "1")
+            .add("quality", "1")
+            .add("difficulty", "1")
+            .add("workload", "1")
+            .add("commentText", textRaw)
+            .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
-            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(body)
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)

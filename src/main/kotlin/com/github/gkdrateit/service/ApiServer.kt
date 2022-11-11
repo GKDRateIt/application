@@ -1,6 +1,6 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.config.RateItConfig
 import com.github.gkdrateit.database.DbAdapter
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder
@@ -46,7 +46,7 @@ class ApiServer {
     }
 
     fun start() {
-        app.start(Config.port)
+        app.start(RateItConfig.port)
     }
 
     fun close() {

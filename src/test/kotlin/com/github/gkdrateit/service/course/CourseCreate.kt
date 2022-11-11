@@ -1,13 +1,11 @@
 package com.github.gkdrateit.service.course
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -33,20 +31,20 @@ internal class CourseCreate : TestBase() {
         val randStr = (1..9)
             .map { allowedChars.random() }
             .joinToString("")
-        val postBody = hashMapOf(
-            "_action" to "create",
-            "code" to randStr,
-            "codeSeq" to "A",
-            "name" to nameBase64,
-            "teacherId" to qTeacherId.toString(),
-            "semester" to "spring",
-            "credit" to BigDecimal.valueOf(1.5).toString(),
-            "degree" to "0",
-            "category" to "unknown"
-        )
+        val body = FormBody.Builder()
+            .add("_action", "create")
+            .add("code", randStr)
+            .add("codeSeq", "A")
+            .add("name", nameBase64)
+            .add("teacherId", qTeacherId.toString())
+            .add("semester", "spring")
+            .add("credit", BigDecimal.valueOf(1.5).toString())
+            .add("degree", "0")
+            .add("category", "unknown")
+            .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
-            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(body)
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
