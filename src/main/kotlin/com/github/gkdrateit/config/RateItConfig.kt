@@ -8,7 +8,9 @@ import java.nio.file.Paths
 
 object RateItConfig {
     private var configFileName = run {
-        val configName = System.getProperty("CONFIG_FILE") ?: "config.json"
+        val configName = System.getProperty("CONFIG_FILE")?.let {
+            Paths.get(System.getProperty("user.dir"), it).toString()
+        } ?: "config.json"
         val configFile = File(configName)
         return@run if (configFile.exists()) {
             configName
