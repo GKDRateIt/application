@@ -76,7 +76,7 @@ tasks.test {
     testLogging {
         exceptionFormat = TestExceptionFormat.FULL
     }
-    jvmArgs = listOf("-DCONFIG_FILE=\"test_config.json\"")
+    jvmArgs = listOf("-DCONFIG_FILE=test_config.json")
 }
 
 tasks.withType<KotlinCompile> {
