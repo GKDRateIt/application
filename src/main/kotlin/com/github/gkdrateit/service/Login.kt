@@ -1,7 +1,7 @@
 package com.github.gkdrateit.service
 
 import com.auth0.jwt.JWT
-import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.config.RateItConfig
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
@@ -38,7 +38,7 @@ class Login : ApiBase() {
                 .withIssuer("GKDRateIt")
                 .withClaim("email", userEmail)
                 .withExpiresAt(LocalDateTime.now().plusDays(7).toInstant(ZoneOffset.UTC))
-                .sign(Config.algorithm)!!
+                .sign(RateItConfig.algorithm)!!
             ctx.json(successReply(jwt))
         } catch (e: Throwable) {
             ctx.status(401)

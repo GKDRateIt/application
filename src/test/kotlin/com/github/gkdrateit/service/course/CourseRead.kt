@@ -1,10 +1,8 @@
 package com.github.gkdrateit.service.course
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.javalin.testtools.JavalinTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -14,14 +12,14 @@ import kotlin.test.assertTrue
 internal class CourseRead : TestBase() {
     @Test
     fun read() = JavalinTest.test(apiServer.app) { server, client ->
-        val postBody = hashMapOf(
-            "_action" to "read",
-            "name" to "测试"
-        )
+        val body = FormBody.Builder()
+            .add("_action", "read")
+            .add("name", "测试")
+            .build()
 
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
-            .post(ObjectMapper().writeValueAsString(postBody).toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(body)
             .build()
         client.request(req).use {
             val bodyStr = it.body!!.string()

@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.github.gkdrateit"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenLocal()
@@ -76,6 +76,7 @@ tasks.test {
     testLogging {
         exceptionFormat = TestExceptionFormat.FULL
     }
+    jvmArgs = listOf("-DCONFIG_FILE=test_config.json")
 }
 
 tasks.withType<KotlinCompile> {

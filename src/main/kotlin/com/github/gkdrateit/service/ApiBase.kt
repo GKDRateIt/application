@@ -1,7 +1,7 @@
 package com.github.gkdrateit.service
 
 import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
+import io.javalin.http.formParamAsClass
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -140,8 +140,8 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
 
-    fun Context.paramJsonMap(): Map<String, String> {
-        return this.bodyAsClass<HashMap<String, String>>()
+    inline fun <reified T : Any> Context.formParamAsNullable(param: String): T? {
+        return formParamAsClass<T>(param).allowNullable().get()
     }
 
     fun Context.javaWebToken(): String {
@@ -151,6 +151,12 @@ abstract class ApiBase {
     fun getPaginationInfoOrDefault(param: Map<String, String>): PaginationInfo {
         val offset = param["offset"]?.toLong() ?: DEFAULT_OFFSET
         val limit = param["limit"]?.toInt() ?: DEFAULT_COUNT
+        return PaginationInfo(offset, limit)
+    }
+
+    fun getPaginationInfoOrDefault(ctx: Context): PaginationInfo {
+        val offset = ctx.formParamAsNullable("offset") ?: DEFAULT_OFFSET
+        val limit = ctx.formParamAsNullable("limit") ?: DEFAULT_COUNT
         return PaginationInfo(offset, limit)
     }
 }
@@ -166,16 +172,13 @@ abstract class CrudApiBase : ApiBase() {
 
     override fun handle(ctx: Context) {
         logger.info("Received request from ${ctx.req().remoteAddr}:${ctx.req().remotePort}")
-        val param = ctx.paramJsonMap()
-        when (param["_action"]?.uppercase()) {
-            null -> missingParamError("_action")
+        val action = ctx.formParam("_action")
+        when (action?.uppercase()) {
             "CREATE" -> handleCreate(ctx)
             "READ" -> handleRead(ctx)
             "UPDATE" -> handleUpdate(ctx)
             "DELETE" -> handleDelete(ctx)
-            else -> illegalParamError(
-                "_action", "Argument action must be one of create/read/update/delete"
-            )
+            else -> missingParamError("_action")
         }.let {
             ctx.json(it)
         }
