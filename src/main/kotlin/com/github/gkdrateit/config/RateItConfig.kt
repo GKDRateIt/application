@@ -25,6 +25,7 @@ object RateItConfig {
     val port: Int = run { configJson["port"]!! as Int }
 
     val algorithm: Algorithm = run { Algorithm.HMAC256(configJson["signSecret"]!! as String) }
+    val jwtIssuer = "GKDRateit"
 
     val maintainerEmailAddr: String = run { configJson["maintainerEmailAddr"]!! as String }
     val maintainerEmailPassword: String = run { configJson["maintainerEmailPassword"]!! as String }

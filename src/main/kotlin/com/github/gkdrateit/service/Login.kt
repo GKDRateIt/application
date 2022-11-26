@@ -20,23 +20,23 @@ class Login : ApiBase() {
             val auth = ctx.basicAuthCredentials()!!
             val userEmail = auth.username
             val hashedPassword = auth.password
-            transaction {
-                // Verify user email and hashed password
-                User.find { Users.email eq userEmail }.firstOrNull()?.let {
-                    it.hashedPassword == hashedPassword
-                } != true
-            }.let {
-                if (it) {
-                    // Wrong password or invalid username
-                    ctx.status(401)
-                    ctx.json(authError())
-                    return
-                }
+            val user = transaction {
+                User.find {
+                    Users.email eq userEmail
+                }.firstOrNull()
+            }
+            if (user == null || user.hashedPassword != hashedPassword) {
+                // Wrong password or invalid username
+                ctx.status(401)
+                ctx.json(authError())
+                return
             }
             val jwt = JWT.create()
                 .withAudience("GKDRateIt")
-                .withIssuer("GKDRateIt")
+                .withIssuer(RateItConfig.jwtIssuer)
                 .withClaim("email", userEmail)
+                .withClaim("userId", user.id.value)
+                .withClaim("role", user.group.toString())
                 .withExpiresAt(LocalDateTime.now().plusDays(7).toInstant(ZoneOffset.UTC))
                 .sign(RateItConfig.algorithm)!!
             ctx.json(successReply(jwt))

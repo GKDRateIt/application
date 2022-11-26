@@ -1,6 +1,7 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.*
+import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
 import org.jetbrains.exposed.sql.orWhere
@@ -21,6 +22,13 @@ class CourseController :
             }
         }
 
+        // Verify permission
+        val jwt = ctx.javaWebToken()
+        if (jwt?.verifyPermission(Permission.COURSE_CREATE) != true) {
+            return permissionError()
+        }
+        val execUser = jwt.claims["userId"]?.asInt() ?: return jwtError()
+
         val nameDec = try {
             // Do NOT use ByteArray.toString() because it produces wrong format!!!
             String(base64Decoder.decode(ctx.formParam("name")!!))
@@ -40,6 +48,7 @@ class CourseController :
                     degree = ctx.formParamAsClass<Int>("degree").get()
                     status = 1
                     category = ctx.formParam("category")!!
+                    submitUserId = execUser
                 }
             }
             return success()

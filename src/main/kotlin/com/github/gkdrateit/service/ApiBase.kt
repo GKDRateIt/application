@@ -1,5 +1,10 @@
 package com.github.gkdrateit.service
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.interfaces.DecodedJWT
+import com.github.gkdrateit.config.RateItConfig
+import com.github.gkdrateit.permission.Permission
+import com.github.gkdrateit.permission.Role
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
 import org.slf4j.Logger
@@ -58,6 +63,11 @@ abstract class ApiBase {
         const val DEFAULT_OFFSET: Long = 0
         const val DEFAULT_COUNT: Int = 5
     }
+
+
+    /*
+     * Response Helpers
+     * */
 
     fun notImplementedError(): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, "Not Implemented yet.", null)
@@ -136,16 +146,44 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, "Invalid JWT", null)
     }
 
+    fun permissionError(shouldHave: List<Permission> = listOf()): ApiResponse<String> {
+        val ext = StringBuilder()
+        if (shouldHave.isNotEmpty()) {
+            ext.append(" Should have permission(s): [")
+            shouldHave.forEach {
+                ext.append(it.toString())
+                ext.append(" ")
+            }
+            ext.append("]")
+        }
+        return ApiResponse(ResponseStatus.FAIL, "Wrong permission.$ext", null)
+    }
+
     fun error(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
+
+    /*
+     * Context helpers
+     * */
 
     inline fun <reified T : Any> Context.formParamAsNullable(param: String): T? {
         return formParamAsClass<T>(param).allowNullable().get()
     }
 
-    fun Context.javaWebToken(): String {
-        return this.header("Authorization")?.substringAfter("Bearer ") ?: ""
+    fun Context.javaWebToken(): DecodedJWT? {
+        val jwtStr = this.header("Authorization")?.substringAfter("Bearer ") ?: return null
+        return try {
+            JWT.require(RateItConfig.algorithm).withIssuer(RateItConfig.jwtIssuer).build().verify(jwtStr)
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
+    fun DecodedJWT.verifyPermission(permission: Permission): Boolean {
+        val roleName = this.claims?.get("role")?.asString() ?: return false
+        val role = Role.getRole(roleName)
+        return role.hasPermission(permission)
     }
 
     fun getPaginationInfoOrDefault(param: Map<String, String>): PaginationInfo {

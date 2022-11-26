@@ -4,6 +4,7 @@ import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
+import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
@@ -106,6 +107,12 @@ class ReviewController : CrudApiBase() {
     }
 
     override fun handleDelete(ctx: Context): ApiResponse<String> {
+        // Verify permission
+        val jwt = ctx.javaWebToken()
+        if (jwt?.verifyPermission(Permission.REVIEW_DELETE) != true) {
+            return permissionError()
+        }
+
         val reviewId = ctx.formParamAsNullable<Int>("reviewId") ?: return missingParamError("reviewId")
         transaction {
             Review.find { Reviews.id eq reviewId }.empty()

@@ -1,5 +1,6 @@
 package com.github.gkdrateit.service.review
 
+import com.github.gkdrateit.createFakeJwt
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
@@ -47,12 +48,14 @@ internal class ReviewDelete : TestBase() {
                 Reviews.commentText eq "test_review_delete"
             }.first().id.value
         }
+        val jwt = createFakeJwt(testAdminUserId, testAdminUserEmail, testAdminUserRole)
         val body = FormBody.Builder()
             .add("_action", "delete")
             .add("reviewId", deletedId.toString())
             .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/review")
+            .header("Authorization", "Bearer $jwt")
             .post(body)
             .build()
         client.request(req).use {

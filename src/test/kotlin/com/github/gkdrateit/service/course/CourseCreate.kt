@@ -1,5 +1,6 @@
 package com.github.gkdrateit.service.course
 
+import com.github.gkdrateit.createFakeJwt
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
@@ -31,6 +32,7 @@ internal class CourseCreate : TestBase() {
         val randStr = (1..9)
             .map { allowedChars.random() }
             .joinToString("")
+        val jwt = createFakeJwt(testUserId, testUserEmail, testUserRole)
         val body = FormBody.Builder()
             .add("_action", "create")
             .add("code", randStr)
@@ -44,6 +46,7 @@ internal class CourseCreate : TestBase() {
             .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
+            .header("Authorization", "Bearer $jwt")
             .post(body)
             .build()
         client.request(req).use {

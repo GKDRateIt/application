@@ -3,6 +3,8 @@ package com.github.gkdrateit.service
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.UserModel
 import com.github.gkdrateit.database.Users
+import com.github.gkdrateit.permission.Admin
+import com.github.gkdrateit.permission.Member
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
@@ -31,7 +33,7 @@ class UserController : CrudApiBase() {
         get() = "/user"
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
-        arrayOf("email", "hashedPassword", "nickname", "startYear", "group", "verificationCode").forEach { key ->
+        arrayOf("email", "hashedPassword", "nickname", "startYear", "verificationCode").forEach { key ->
             if (ctx.formParam(key) == null) {
                 return missingParamError(key)
             }
@@ -45,6 +47,14 @@ class UserController : CrudApiBase() {
             val notRegistered = transaction {
                 User.find { Users.email eq ctx.formParam("email")!! }.count() == 0L
             }
+            val firstUser = transaction {
+                Users.selectAll().count() == 0L
+            }
+            val permission = if (firstUser) {
+                Admin
+            } else {
+                Member
+            }
             return if (notRegistered) {
                 transaction {
                     User.new {
@@ -52,7 +62,7 @@ class UserController : CrudApiBase() {
                         hashedPassword = ctx.formParam("hashedPassword")!!
                         nickname = ctx.formParam("nickname")!!
                         startYear = ctx.formParam("startYear")!!
-                        group = ctx.formParam("group")!!
+                        group = permission.toString()
                     }
                 }
                 success()

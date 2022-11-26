@@ -19,6 +19,7 @@ data class CourseModel(
     val degree: Int,
     val category: String,
     val status: Int,
+    val submitUserId: Int,
 )
 
 object Courses : IntIdTable(columnName = "c_course_id") {
@@ -50,8 +51,21 @@ class Course(id: EntityID<Int>) : IntEntity(id) {
     var degree by Courses.degree
     var category by Courses.category
     var status by Courses.status
+    var submitUserId by Courses.submitUserId
 
     fun toModel(): CourseModel {
-        return CourseModel(id.value, code, codeSeq, name, teacherId, semester, credit, degree, category, status)
+        return CourseModel(
+            id.value,
+            code,
+            codeSeq,
+            name,
+            teacherId,
+            semester,
+            credit,
+            degree,
+            category,
+            status,
+            submitUserId
+        )
     }
 }

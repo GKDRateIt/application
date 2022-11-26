@@ -2,6 +2,7 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Teacher
 import com.github.gkdrateit.database.Teachers
+import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
@@ -15,6 +16,11 @@ class TeacherController : CrudApiBase() {
     override fun handleCreate(ctx: Context): ApiResponse<String> {
         if (ctx.formParam("name") == null) {
             return missingParamError("name")
+        }
+
+        val jwt = ctx.javaWebToken()
+        if (jwt?.verifyPermission(Permission.TEACHER_CREATE) != true) {
+            return permissionError()
         }
 
         val nameDec = try {
