@@ -17,8 +17,8 @@ apply(plugin = "kotlinx-atomicfu")
 plugins {
     java
     jacoco
-    kotlin("jvm") version "1.7.20"
-    kotlin("plugin.serialization") version "1.7.20"
+    kotlin("jvm") version "1.7.21"
+    kotlin("plugin.serialization") version "1.7.21"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.sonarqube") version "3.5.0.2730"
 }
@@ -46,12 +46,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
     // slg4j
-    implementation("org.slf4j:slf4j-simple:2.0.3")
+    implementation("org.slf4j:slf4j-simple:2.0.4")
     // javalin
-    implementation("io.javalin:javalin:5.1.3")
+    implementation("io.javalin:javalin:5.2.0")
     // jackson
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0-rc1")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.0")
     // guava
     implementation("com.google.guava:guava:31.1-jre")
     // java web token
@@ -67,7 +67,7 @@ dependencies {
     implementation("com.sun.mail:javax.mail:1.6.2")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.javalin:javalin-testtools:5.1.3")
+    testImplementation("io.javalin:javalin-testtools:5.2.0")
     testImplementation("com.h2database:h2:2.1.214")
 }
 
