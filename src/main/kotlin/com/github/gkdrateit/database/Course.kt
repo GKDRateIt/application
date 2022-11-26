@@ -31,6 +31,7 @@ object Courses : IntIdTable(columnName = "c_course_id") {
     val degree = integer("c_degree")
     val category = varchar("c_category", 15)
     val status = integer("c_status")
+    val submitUserId = integer("c_submit_user_id").references(Users.id)
 
     init {
         index(true, code, codeSeq, teacherId)
