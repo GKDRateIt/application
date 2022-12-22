@@ -19,7 +19,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class TeacherCreate {
+internal class TeacherCreateWithPermission {
     private val apiServer = ApiServer()
 
     var testUserId by Delegates.notNull<Int>()
@@ -29,14 +29,14 @@ internal class TeacherCreate {
     @BeforeAll
     fun setup() {
         TestDbAdapter.setup()
-        if (transaction { User.find { Users.email eq "test_admin@test.com" }.empty() }) {
+        if (transaction { User.find { Users.email eq testUserEmail }.empty() }) {
             transaction {
                 User.new {
                     email = testUserEmail
                     hashedPassword = "???"
                     nickname = "???"
                     startYear = "???"
-                    group = testUserEmail
+                    group = "admin"
                 }
             }
         }
@@ -45,17 +45,17 @@ internal class TeacherCreate {
 
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
-        val nameRaw = "test_teacher_create"
-        val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
+        val testCreateTeacherName = "ttc_perm"
+        val testCreateTeacherEmail = "ttc@mailc.ucas.ac.cn"
         assertTrue {
             transaction {
-                Teacher.find { Teachers.name eq nameBase64 }.empty()
+                Teacher.find { Teachers.name eq testCreateTeacherName }.empty()
             }
         }
         val body = FormBody.Builder()
             .add("_action", "create")
-            .add("name", nameBase64)
-            .add("email", "test@ucas.ac.cn")
+            .add("name", testCreateTeacherName)
+            .add("email", testCreateTeacherEmail)
             .build()
         val jwt = createFakeJwt(testUserId, testUserEmail, testUserRole)
         val req = Request.Builder()
@@ -65,19 +65,19 @@ internal class TeacherCreate {
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("success")
             }
         }
         assertFalse {
             transaction {
-                Teacher.find { Teachers.name eq nameRaw }.empty()
+                Teacher.find { Teachers.name eq testCreateTeacherName }.empty()
             }
         }
         transaction {
             Teachers.deleteWhere {
-                name eq nameRaw
+                name eq testCreateTeacherName
             }
         }
     }

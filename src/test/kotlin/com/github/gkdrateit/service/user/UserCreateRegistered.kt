@@ -1,6 +1,5 @@
 package com.github.gkdrateit.service.user
 
-
 import com.github.gkdrateit.database.TestDbAdapter
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
@@ -16,12 +15,11 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class UserCreate {
+internal class UserCreateRegistered {
     private val apiServer = ApiServer()
 
     @BeforeAll
@@ -35,22 +33,39 @@ internal class UserCreate {
         val randStr = (1..10)
             .map { allowedChars.random() }
             .joinToString("")
-        val testUserNickname = "tuc_normal"
+        val testUserNickname = "tuc_registered"
         assertTrue {
             transaction {
                 User.find { Users.nickname eq testUserNickname }.empty()
             }
         }
         val testUserEmail = "test_$randStr@mails.ucas.ac.cn"
+        val testHashedPassword = "123456"
+        val testStartYear = "2020"
+        val testGroup = "default"
+        transaction {
+            User.new {
+                email = testUserEmail
+                hashedPassword = testHashedPassword
+                nickname = testUserNickname
+                startYear = testStartYear
+                group = testGroup
+            }
+        }
+        assertTrue {
+            !transaction {
+                User.find { Users.nickname eq testUserNickname }.empty()
+            }
+        }
         EmailVerificationController.tempCodes[testUserEmail] = EmailVerificationController.Code("111111")
         val body = FormBody.Builder()
             .add("_action", "create")
             .add("email", testUserEmail)
             .add("verificationCode", "111111")
-            .add("hashedPassword", "123456")
+            .add("hashedPassword", testHashedPassword)
             .add("nickname", testUserNickname)
-            .add("startYear", "2020")
-            .add("group", "default")
+            .add("startYear", testStartYear)
+            .add("group", testGroup)
             .build()
 
         val req = Request.Builder()
@@ -59,19 +74,12 @@ internal class UserCreate {
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("fail")
             }
-        }
-        assertFalse {
-            transaction {
-                User.find { Users.nickname eq testUserNickname }.empty()
-            }
-        }
-        transaction {
-            Users.deleteWhere {
-                nickname eq testUserNickname
+            assertTrue {
+                bodyStr.contains("registered")
             }
         }
     }

@@ -23,23 +23,17 @@ class TeacherController : CrudApiBase() {
             return permissionError()
         }
 
-        val nameDec = try {
-            String(base64Decoder.decode(ctx.formParam("name")!!))
-        } catch (e: IllegalArgumentException) {
-            return base64Error("name")
-        }
-
-        try {
+        return try {
             // Q: should I check if it repeats manually?
             transaction {
                 Teacher.new {
-                    name = nameDec
-                    email = ctx.formParam("name")!!
+                    name = ctx.formParam("name")!!
+                    email = ctx.formParam("email")!!
                 }
             }
-            return success()
+            success()
         } catch (e: Throwable) {
-            return databaseError(e.message ?: "")
+            databaseError(e.message ?: "")
         }
     }
 

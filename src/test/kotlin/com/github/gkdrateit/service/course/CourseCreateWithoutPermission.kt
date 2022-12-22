@@ -19,11 +19,10 @@ internal class CourseCreateWithoutPermission : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val qTeacherId = transaction { Teacher.all().first().id.value }
-        val nameRaw = "test_course_create_no_perm"
-        val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
+        val testCreateCourseName = "tcc_no_perm"
         assertTrue {
             transaction {
-                Course.find { Courses.name eq nameRaw }.empty()
+                Course.find { Courses.name eq testCreateCourseName }.empty()
             }
         }
         val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
@@ -34,7 +33,7 @@ internal class CourseCreateWithoutPermission : TestBase() {
             .add("_action", "create")
             .add("code", randStr)
             .add("codeSeq", "A")
-            .add("name", nameBase64)
+            .add("name", testCreateCourseName)
             .add("teacherId", qTeacherId.toString())
             .add("semester", "spring")
             .add("credit", BigDecimal.valueOf(1.5).toString())
@@ -57,7 +56,7 @@ internal class CourseCreateWithoutPermission : TestBase() {
         }
         assertTrue {
             transaction {
-                Course.find { Courses.name eq nameRaw }.empty()
+                Course.find { Courses.name eq testCreateCourseName }.empty()
             }
         }
     }

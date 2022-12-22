@@ -7,10 +7,11 @@ import com.github.gkdrateit.database.Teacher
 import io.javalin.testtools.JavalinTest
 import okhttp3.FormBody
 import okhttp3.Request
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.math.BigDecimal
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,11 +21,10 @@ internal class CourseCreateWithPermission : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val qTeacherId = transaction { Teacher.all().first().id.value }
-        val nameRaw = "test_course_create"
-        val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
+        val testCreateCourseName = "tcc"
         assertTrue {
             transaction {
-                Course.find { Courses.name eq nameRaw }.empty()
+                Course.find { Courses.name eq testCreateCourseName }.empty()
             }
         }
         val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9')
@@ -36,10 +36,10 @@ internal class CourseCreateWithPermission : TestBase() {
             .add("_action", "create")
             .add("code", randStr)
             .add("codeSeq", "A")
-            .add("name", nameBase64)
+            .add("name", testCreateCourseName)
             .add("teacherId", qTeacherId.toString())
             .add("semester", "spring")
-            .add("credit", BigDecimal.valueOf(1.5).toString())
+            .add("credit", (1.5).toString())
             .add("degree", "0")
             .add("category", "unknown")
             .build()
@@ -57,7 +57,12 @@ internal class CourseCreateWithPermission : TestBase() {
         }
         assertTrue {
             !transaction {
-                Course.find { Courses.name eq nameRaw }.empty()
+                Course.find { Courses.name eq testCreateCourseName }.empty()
+            }
+        }
+        transaction {
+            Courses.deleteWhere {
+                name eq testCreateCourseName
             }
         }
     }

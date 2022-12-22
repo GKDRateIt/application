@@ -29,19 +29,12 @@ class CourseController :
         }
         val execUser = jwt.claims["userId"]?.asInt() ?: return jwtError()
 
-        val nameDec = try {
-            // Do NOT use ByteArray.toString() because it produces wrong format!!!
-            String(base64Decoder.decode(ctx.formParam("name")!!))
-        } catch (e: Throwable) {
-            return base64Error("name")
-        }
-
         try {
             transaction {
                 Course.new {
                     code = ctx.formParam("code")!!
                     codeSeq = ctx.formParam("codeSeq")
-                    name = nameDec
+                    name = ctx.formParam("name")!!
                     teacherId = ctx.formParamAsClass<Int>("teacherId").get()
                     semester = ctx.formParam("semester")!!
                     credit = ctx.formParamAsClass<Double>("credit").get().toBigDecimal()

@@ -13,7 +13,7 @@ internal abstract class TestBase {
     protected val apiServer = ApiServer()
 
     protected var testUserId by Delegates.notNull<Int>()
-    protected val testUserEmail = "test@test.com"
+    protected val testUserEmail = "test_user@test.com"
     protected val testUserRole = "Member"
 
     @BeforeAll

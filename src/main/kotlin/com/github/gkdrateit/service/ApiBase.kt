@@ -97,18 +97,6 @@ abstract class ApiBase {
         return illegalParamError(name, "Must provide parameter `$name`.")
     }
 
-    fun base64Error(name: String): ApiResponse<String> {
-        return illegalParamError(name, "Parameter `$name` must be a valid base64 string.")
-    }
-
-    fun base64Error(name: List<String>): ApiResponse<String> {
-        val sb = StringBuilder()
-        sb.append("Parameters in `")
-        name.forEach { sb.append("$it, ") }
-        sb.append("` must be valid base64 strings.")
-        return illegalParamError(name, extraInfo = sb.toString())
-    }
-
     fun success(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.SUCCESS, detail, null)
     }
@@ -135,7 +123,7 @@ abstract class ApiBase {
     }
 
     fun databaseError(detail: String = ""): ApiResponse<String> {
-        return ApiResponse(ResponseStatus.FAIL, detail, null)
+        return ApiResponse(ResponseStatus.FAIL, "DB error:$detail", null)
     }
 
     fun authError(): ApiResponse<String> {
