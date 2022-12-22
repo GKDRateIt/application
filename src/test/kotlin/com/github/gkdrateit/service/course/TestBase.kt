@@ -38,7 +38,7 @@ internal abstract class TestBase {
                     hashedPassword = "???"
                     nickname = "???"
                     startYear = "???"
-                    group = testUserEmail
+                    group = testUserRole
                 }
             }
         }

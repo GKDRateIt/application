@@ -1,5 +1,6 @@
 package com.github.gkdrateit.service.review
 
+import com.github.gkdrateit.createFakeJwt
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
@@ -13,17 +14,16 @@ import org.junit.jupiter.api.TestInstance
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class ReviewCreate : TestBase() {
+internal class ReviewCreateWithoutPermission : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val curTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0))
         val courseId = transaction { Course.all().first().id.value }
         val userId = transaction { User.all().first().id.value }
-        val textRaw = "test_review_create"
+        val textRaw = "test_review_create_no_perm"
         assertTrue {
             transaction {
                 Review.find { Reviews.commentText eq textRaw }.empty()
@@ -48,12 +48,15 @@ internal class ReviewCreate : TestBase() {
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("fail")
+            }
+            assertTrue {
+                bodyStr.contains("permission") || bodyStr.contains("jwt")
             }
         }
-        assertFalse {
+        assertTrue {
             transaction {
                 Review.find { Reviews.commentText eq textRaw }.empty()
             }

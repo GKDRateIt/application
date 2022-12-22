@@ -23,9 +23,9 @@ class CourseController :
         }
 
         // Verify permission
-        val jwt = ctx.javaWebToken()
-        if (jwt?.verifyPermission(Permission.COURSE_CREATE) != true) {
-            return permissionError()
+        val jwt = ctx.javaWebToken() ?: return jwtError()
+        if (!jwt.verifyPermission(Permission.COURSE_CREATE)) {
+            return permissionError(Permission.COURSE_CREATE)
         }
         val execUser = jwt.claims["userId"]?.asInt() ?: return jwtError()
 

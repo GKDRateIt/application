@@ -1,6 +1,5 @@
 package com.github.gkdrateit.service.course
 
-import com.github.gkdrateit.createFakeJwt
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Courses
 import com.github.gkdrateit.database.Teacher
@@ -13,15 +12,14 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.util.*
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class CourseCreate : TestBase() {
+internal class CourseCreateWithoutPermission : TestBase() {
     @Test
     fun create() = JavalinTest.test(apiServer.app) { server, client ->
         val qTeacherId = transaction { Teacher.all().first().id.value }
-        val nameRaw = "test_course_create"
+        val nameRaw = "test_course_create_no_perm"
         val nameBase64 = Base64.getEncoder().encodeToString(nameRaw.toByteArray())
         assertTrue {
             transaction {
@@ -32,7 +30,6 @@ internal class CourseCreate : TestBase() {
         val randStr = (1..9)
             .map { allowedChars.random() }
             .joinToString("")
-        val jwt = createFakeJwt(testUserId, testUserEmail, testUserRole)
         val body = FormBody.Builder()
             .add("_action", "create")
             .add("code", randStr)
@@ -46,17 +43,19 @@ internal class CourseCreate : TestBase() {
             .build()
         val req = Request.Builder()
             .url("http://localhost:${server.port()}/api/course")
-            .header("Authorization", "Bearer $jwt")
             .post(body)
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("fail")
+            }
+            assertTrue {
+                bodyStr.contains("permission") || bodyStr.contains("jwt")
             }
         }
-        assertFalse {
+        assertTrue {
             transaction {
                 Course.find { Courses.name eq nameRaw }.empty()
             }

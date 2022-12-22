@@ -38,6 +38,12 @@ class ReviewController : CrudApiBase() {
             }
         }
 
+        val jwt = ctx.javaWebToken() ?: return jwtError()
+        if (!jwt.verifyPermission(Permission.REVIEW_CREATE)) {
+            return permissionError(Permission.REVIEW_CREATE)
+        }
+
+
         val queryUserId = ctx.formParamAsNullable<Int>("userId")
             ?: ctx.formParamAsNullable<String>("email")?.let {
                 transaction {
@@ -108,9 +114,9 @@ class ReviewController : CrudApiBase() {
 
     override fun handleDelete(ctx: Context): ApiResponse<String> {
         // Verify permission
-        val jwt = ctx.javaWebToken()
-        if (jwt?.verifyPermission(Permission.REVIEW_DELETE) != true) {
-            return permissionError()
+        val jwt = ctx.javaWebToken() ?: return jwtError()
+        if (!jwt.verifyPermission(Permission.REVIEW_DELETE)) {
+            return permissionError(Permission.REVIEW_DELETE)
         }
 
         val reviewId = ctx.formParamAsNullable<Int>("reviewId") ?: return missingParamError("reviewId")

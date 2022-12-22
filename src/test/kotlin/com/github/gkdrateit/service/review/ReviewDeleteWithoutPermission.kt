@@ -13,16 +13,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class ReviewDelete : TestBase() {
+internal class ReviewDeleteWithoutPermission : TestBase() {
     @Test
     fun delete() = JavalinTest.test(apiServer.app) { server, client ->
         val qCourseId = transaction { Course.all().first().id.value }
         val qUserId = transaction { User.all().first().id.value }
         val curTime = LocalDateTime.now()
+        val testCommentText = "test_review_delete_no_perm"
         transaction {
             Review.new {
                 courseId = qCourseId
@@ -33,22 +33,23 @@ internal class ReviewDelete : TestBase() {
                 quality = 1
                 difficulty = 1
                 workload = 1
-                commentText = "test_review_delete"
+                commentText = testCommentText
             }
         }
-        assertFalse {
-            transaction {
+        assertTrue {
+            !transaction {
                 Review.find {
-                    Reviews.commentText eq "test_review_delete"
+                    Reviews.commentText eq testCommentText
                 }.empty()
             }
         }
         val deletedId = transaction {
             Review.find {
-                Reviews.commentText eq "test_review_delete"
+                Reviews.commentText eq testCommentText
             }.first().id.value
         }
-        val jwt = createFakeJwt(testAdminUserId, testAdminUserEmail, testAdminUserRole)
+        // Member permission cannot delete a review;
+        val jwt = createFakeJwt(testMemberUserId, testMemberUserEmail, testMemberUserRole)
         val body = FormBody.Builder()
             .add("_action", "delete")
             .add("reviewId", deletedId.toString())
@@ -60,15 +61,18 @@ internal class ReviewDelete : TestBase() {
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("fail")
+            }
+            assertTrue {
+                bodyStr.contains("permission") || bodyStr.contains("jwt")
             }
         }
         assertTrue {
-            transaction {
+            !transaction {
                 Review.find {
-                    Reviews.commentText eq "test_review_delete"
+                    Reviews.commentText eq testCommentText
                 }.empty()
             }
         }

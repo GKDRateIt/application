@@ -159,6 +159,10 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, "Wrong permission.$ext", null)
     }
 
+    fun permissionError(shouldHave: Permission): ApiResponse<String> {
+        return permissionError(listOf(shouldHave))
+    }
+
     fun error(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
