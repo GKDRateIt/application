@@ -1,6 +1,5 @@
 package com.github.gkdrateit.service.review
 
-import com.github.gkdrateit.createFakeJwt
 import com.github.gkdrateit.database.Course
 import com.github.gkdrateit.database.Review
 import com.github.gkdrateit.database.Reviews
