@@ -1,7 +1,12 @@
 package com.github.gkdrateit.service
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.interfaces.DecodedJWT
+import com.github.gkdrateit.config.RateItConfig
+import com.github.gkdrateit.permission.Permission
+import com.github.gkdrateit.permission.Role
 import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
+import io.javalin.http.formParamAsClass
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -59,6 +64,11 @@ abstract class ApiBase {
         const val DEFAULT_COUNT: Int = 5
     }
 
+
+    /*
+     * Response Helpers
+     * */
+
     fun notImplementedError(): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, "Not Implemented yet.", null)
     }
@@ -87,18 +97,6 @@ abstract class ApiBase {
         return illegalParamError(name, "Must provide parameter `$name`.")
     }
 
-    fun base64Error(name: String): ApiResponse<String> {
-        return illegalParamError(name, "Parameter `$name` must be a valid base64 string.")
-    }
-
-    fun base64Error(name: List<String>): ApiResponse<String> {
-        val sb = StringBuilder()
-        sb.append("Parameters in `")
-        name.forEach { sb.append("$it, ") }
-        sb.append("` must be valid base64 strings.")
-        return illegalParamError(name, extraInfo = sb.toString())
-    }
-
     fun success(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.SUCCESS, detail, null)
     }
@@ -125,7 +123,7 @@ abstract class ApiBase {
     }
 
     fun databaseError(detail: String = ""): ApiResponse<String> {
-        return ApiResponse(ResponseStatus.FAIL, detail, null)
+        return ApiResponse(ResponseStatus.FAIL, "DB error:$detail", null)
     }
 
     fun authError(): ApiResponse<String> {
@@ -136,21 +134,59 @@ abstract class ApiBase {
         return ApiResponse(ResponseStatus.FAIL, "Invalid JWT", null)
     }
 
+    fun permissionError(shouldHave: List<Permission> = listOf()): ApiResponse<String> {
+        val ext = StringBuilder()
+        if (shouldHave.isNotEmpty()) {
+            ext.append(" Should have permission(s): [")
+            shouldHave.forEach {
+                ext.append(it.toString())
+                ext.append(" ")
+            }
+            ext.append("]")
+        }
+        return ApiResponse(ResponseStatus.FAIL, "Wrong permission.$ext", null)
+    }
+
+    fun permissionError(shouldHave: Permission): ApiResponse<String> {
+        return permissionError(listOf(shouldHave))
+    }
+
     fun error(detail: String = ""): ApiResponse<String> {
         return ApiResponse(ResponseStatus.FAIL, detail, null)
     }
 
-    fun Context.paramJsonMap(): Map<String, String> {
-        return this.bodyAsClass<HashMap<String, String>>()
+    /*
+     * Context helpers
+     * */
+
+    inline fun <reified T : Any> Context.formParamAsNullable(param: String): T? {
+        return formParamAsClass<T>(param).allowNullable().get()
     }
 
-    fun Context.javaWebToken(): String {
-        return this.header("Authorization")?.substringAfter("Bearer ") ?: ""
+    fun Context.javaWebToken(): DecodedJWT? {
+        val jwtStr = this.header("Authorization")?.substringAfter("Bearer ") ?: return null
+        return try {
+            JWT.require(RateItConfig.algorithm).withIssuer(RateItConfig.jwtIssuer).build().verify(jwtStr)
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
+    fun DecodedJWT.verifyPermission(permission: Permission): Boolean {
+        val roleName = this.claims?.get("role")?.asString() ?: return false
+        val role = Role.getRole(roleName)
+        return role.hasPermission(permission)
     }
 
     fun getPaginationInfoOrDefault(param: Map<String, String>): PaginationInfo {
         val offset = param["offset"]?.toLong() ?: DEFAULT_OFFSET
         val limit = param["limit"]?.toInt() ?: DEFAULT_COUNT
+        return PaginationInfo(offset, limit)
+    }
+
+    fun getPaginationInfoOrDefault(ctx: Context): PaginationInfo {
+        val offset = ctx.formParamAsNullable("offset") ?: DEFAULT_OFFSET
+        val limit = ctx.formParamAsNullable("limit") ?: DEFAULT_COUNT
         return PaginationInfo(offset, limit)
     }
 }
@@ -166,16 +202,13 @@ abstract class CrudApiBase : ApiBase() {
 
     override fun handle(ctx: Context) {
         logger.info("Received request from ${ctx.req().remoteAddr}:${ctx.req().remotePort}")
-        val param = ctx.paramJsonMap()
-        when (param["_action"]?.uppercase()) {
-            null -> missingParamError("_action")
+        val action = ctx.formParam("_action")
+        when (action?.uppercase()) {
             "CREATE" -> handleCreate(ctx)
             "READ" -> handleRead(ctx)
             "UPDATE" -> handleUpdate(ctx)
             "DELETE" -> handleDelete(ctx)
-            else -> illegalParamError(
-                "_action", "Argument action must be one of create/read/update/delete"
-            )
+            else -> missingParamError("_action")
         }.let {
             ctx.json(it)
         }

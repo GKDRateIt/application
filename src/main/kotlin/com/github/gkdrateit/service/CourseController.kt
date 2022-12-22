@@ -1,7 +1,9 @@
 package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.*
+import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
+import io.javalin.http.formParamAsClass
 import org.jetbrains.exposed.sql.orWhere
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -14,31 +16,32 @@ class CourseController :
 
 
     override fun handleCreate(ctx: Context): ApiResponse<*> {
-        val param = ctx.paramJsonMap()
-        arrayOf("code", "name", "teacherId", "semester", "credit", "degree").forEach { key ->
-            if (param[key] == null) {
+        arrayOf("code", "name", "teacherId", "semester", "credit", "degree", "category").forEach { key ->
+            if (ctx.formParam(key) == null) {
                 return missingParamError(key)
             }
         }
 
-        val nameDec = try {
-            // Do NOT use ByteArray.toString() because it produces wrong format!!!
-            String(base64Decoder.decode(param["name"]!!))
-        } catch (e: Throwable) {
-            return base64Error("name")
+        // Verify permission
+        val jwt = ctx.javaWebToken() ?: return jwtError()
+        if (!jwt.verifyPermission(Permission.COURSE_CREATE)) {
+            return permissionError(Permission.COURSE_CREATE)
         }
+        val execUser = jwt.claims["userId"]?.asInt() ?: return jwtError()
 
         try {
             transaction {
                 Course.new {
-                    code = param["code"]!!
-                    codeSeq = param["codeSeq"]
-                    name = nameDec
-                    teacherId = param["teacherId"]!!.toInt()
-                    semester = param["semester"]!!
-                    credit = param["credit"]!!.toBigDecimal()
-                    degree = param["degree"]!!.toInt()
-                    status = 0
+                    code = ctx.formParam("code")!!
+                    codeSeq = ctx.formParam("codeSeq")
+                    name = ctx.formParam("name")!!
+                    teacherId = ctx.formParamAsClass<Int>("teacherId").get()
+                    semester = ctx.formParam("semester")!!
+                    credit = ctx.formParamAsClass<Double>("credit").get().toBigDecimal()
+                    degree = ctx.formParamAsClass<Int>("degree").get()
+                    status = 1
+                    category = ctx.formParam("category")!!
+                    submitUserId = execUser
                 }
             }
             return success()
@@ -48,36 +51,38 @@ class CourseController :
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val param = ctx.paramJsonMap()
         val result = mutableListOf<CourseModel>()
         try {
             val query = Courses.select { Courses.status eq 1 }
-            param["courseId"]?.let {
-                query.orWhere { Courses.id eq it.toInt() }
+            ctx.formParamAsNullable<Int>("courseId")?.let {
+                query.orWhere { Courses.id eq it }
             }
-            param["code"]?.let {
+            ctx.formParam("code")?.let {
                 query.orWhere { Courses.code eq it }
             }
-            param["codeSeq"]?.let {
+            ctx.formParam("codeSeq")?.let {
                 query.orWhere { Courses.codeSeq eq it }
             }
-            param["name"]?.let {
+            ctx.formParam("name")?.let {
                 query.orWhere { Courses.name.upperCase() like "$it%".uppercase() }
             }
-            param["teacherId"]?.let {
-                query.orWhere { Courses.teacherId eq it.toInt() }
+            ctx.formParamAsNullable<Int>("teacherId")?.let {
+                query.orWhere { Courses.teacherId eq it }
             }
-            param["semester"]?.let {
+            ctx.formParam("semester")?.let {
                 query.orWhere { Courses.semester eq it }
             }
-            param["credit"]?.let {
+            ctx.formParamAsNullable<Double>("credit")?.let {
                 query.orWhere { Courses.credit eq it.toBigDecimal() }
             }
-            param["degree"]?.let {
-                query.orWhere { Courses.degree eq it.toInt() }
+            ctx.formParamAsNullable<Int>("degree")?.let {
+                query.orWhere { Courses.degree eq it }
+            }
+            ctx.formParam("category")?.let {
+                query.orWhere { Courses.category eq it }
             }
             val totalCount = transaction { query.count() }
-            val pagination = getPaginationInfoOrDefault(param)
+            val pagination = getPaginationInfoOrDefault(ctx)
             query.limit(pagination.limit, pagination.offset)
             transaction {
                 query.map {
@@ -86,7 +91,7 @@ class CourseController :
             }.let {
                 result.addAll(it)
             }
-            param["teacherName"]?.let {
+            ctx.formParam("teacherName")?.let {
                 transaction {
                     Teacher.find { Teachers.name.upperCase() like "$it%".uppercase() }.map { it.toModel() }
                 }.forEach {

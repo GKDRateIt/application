@@ -1,6 +1,6 @@
 package com.github.gkdrateit.database
 
-import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.config.RateItConfig
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.LoggerFactory
 
@@ -8,10 +8,10 @@ object DbAdapter {
     private val logger = LoggerFactory.getLogger(this.javaClass)
     private val db by lazy {
         Database.connect(
-            url = Config.databaseURL,
-            driver = "org.postgresql.Driver",
-            user = Config.databaseUser,
-            password = Config.databasePassword,
+            url = RateItConfig.databaseURL,
+            driver = RateItConfig.databaseDriver,
+            user = RateItConfig.databaseUser,
+            password = RateItConfig.databasePassword,
         )
     }
 

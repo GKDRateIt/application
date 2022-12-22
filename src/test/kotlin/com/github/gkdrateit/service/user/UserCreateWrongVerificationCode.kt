@@ -16,12 +16,11 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class UserCreate {
+internal class UserCreateWrongVerificationCode {
     private val apiServer = ApiServer()
 
     @BeforeAll
@@ -35,18 +34,17 @@ internal class UserCreate {
         val randStr = (1..10)
             .map { allowedChars.random() }
             .joinToString("")
-        val testUserNickname = "tuc_normal"
+        val testUserNickname = "tuc_verification"
         assertTrue {
             transaction {
                 User.find { Users.nickname eq testUserNickname }.empty()
             }
         }
-        val testUserEmail = "test_$randStr@mails.ucas.ac.cn"
-        EmailVerificationController.tempCodes[testUserEmail] = EmailVerificationController.Code("111111")
+        EmailVerificationController.tempCodes["test_$randStr@ucas.ac.cn"] = EmailVerificationController.Code("111111")
         val body = FormBody.Builder()
             .add("_action", "create")
-            .add("email", testUserEmail)
-            .add("verificationCode", "111111")
+            .add("email", "test_$randStr@ucas.ac.cn")
+            .add("verificationCode", "222222")
             .add("hashedPassword", "123456")
             .add("nickname", testUserNickname)
             .add("startYear", "2020")
@@ -59,12 +57,15 @@ internal class UserCreate {
             .build()
         client.request(req).use {
             assertEquals(it.code, 200)
-            val bodyStr = it.body!!.string()
+            val bodyStr = it.body!!.string().lowercase()
             assertTrue {
-                bodyStr.contains("SUCCESS")
+                bodyStr.contains("fail")
+            }
+            assertTrue {
+                bodyStr.contains("verification")
             }
         }
-        assertFalse {
+        assertTrue {
             transaction {
                 User.find { Users.nickname eq testUserNickname }.empty()
             }

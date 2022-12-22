@@ -1,7 +1,7 @@
 package com.github.gkdrateit.service
 
 import com.auth0.jwt.JWT
-import com.github.gkdrateit.config.Config
+import com.github.gkdrateit.config.RateItConfig
 import com.github.gkdrateit.database.User
 import com.github.gkdrateit.database.Users
 import io.javalin.http.Context
@@ -20,25 +20,25 @@ class Login : ApiBase() {
             val auth = ctx.basicAuthCredentials()!!
             val userEmail = auth.username
             val hashedPassword = auth.password
-            transaction {
-                // Verify user email and hashed password
-                User.find { Users.email eq userEmail }.firstOrNull()?.let {
-                    it.hashedPassword == hashedPassword
-                } != true
-            }.let {
-                if (it) {
-                    // Wrong password or invalid username
-                    ctx.status(401)
-                    ctx.json(authError())
-                    return
-                }
+            val user = transaction {
+                User.find {
+                    Users.email eq userEmail
+                }.firstOrNull()
+            }
+            if (user == null || user.hashedPassword != hashedPassword) {
+                // Wrong password or invalid username
+                ctx.status(401)
+                ctx.json(authError())
+                return
             }
             val jwt = JWT.create()
                 .withAudience("GKDRateIt")
-                .withIssuer("GKDRateIt")
+                .withIssuer(RateItConfig.jwtIssuer)
                 .withClaim("email", userEmail)
+                .withClaim("userId", user.id.value)
+                .withClaim("role", user.group.toString())
                 .withExpiresAt(LocalDateTime.now().plusDays(7).toInstant(ZoneOffset.UTC))
-                .sign(Config.algorithm)!!
+                .sign(RateItConfig.algorithm)!!
             ctx.json(successReply(jwt))
         } catch (e: Throwable) {
             ctx.status(401)

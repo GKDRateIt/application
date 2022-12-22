@@ -2,6 +2,7 @@ package com.github.gkdrateit.service
 
 import com.github.gkdrateit.database.Teacher
 import com.github.gkdrateit.database.Teachers
+import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.selectAll
@@ -13,42 +14,39 @@ class TeacherController : CrudApiBase() {
         get() = "/teacher"
 
     override fun handleCreate(ctx: Context): ApiResponse<String> {
-        val param = ctx.paramJsonMap()
-        if (param["name"] == null) {
+        if (ctx.formParam("name") == null) {
             return missingParamError("name")
         }
 
-        val nameDec = try {
-            String(base64Decoder.decode(param["name"]!!))
-        } catch (e: IllegalArgumentException) {
-            return base64Error("name")
+        val jwt = ctx.javaWebToken()
+        if (jwt?.verifyPermission(Permission.TEACHER_CREATE) != true) {
+            return permissionError()
         }
 
-        try {
+        return try {
             // Q: should I check if it repeats manually?
             transaction {
                 Teacher.new {
-                    name = nameDec
-                    email = param["email"]
+                    name = ctx.formParam("name")!!
+                    email = ctx.formParam("email")!!
                 }
             }
-            return success()
+            success()
         } catch (e: Throwable) {
-            return databaseError(e.message ?: "")
+            databaseError(e.message ?: "")
         }
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val query = Teachers.selectAll()
-        val param = ctx.paramJsonMap()
-        param["teacherId"]?.let {
-            query.andWhere { Teachers.id eq it.toInt() }
+        ctx.formParamAsNullable<Int>("teacherId")?.let {
+            query.andWhere { Teachers.id eq it }
         }
-        param["name"]?.let {
+        ctx.formParam("name")?.let {
             query.andWhere { Teachers.name like "$it%" }
         }
         val totalCount = transaction { query.count() }
-        val pagination = getPaginationInfoOrDefault(param)
+        val pagination = getPaginationInfoOrDefault(ctx)
         query.limit(pagination.limit, pagination.offset)
         transaction {
             query.map { Teacher.wrapRow(it).toModel() }
