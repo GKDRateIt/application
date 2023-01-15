@@ -53,7 +53,7 @@ class CourseController :
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val result = mutableListOf<CourseModel>()
         try {
-            val query = Courses.select { Courses.status eq 1 }
+            val query = Courses.select { Courses.status eq -1 }
             ctx.formParamAsNullable<Int>("courseId")?.let {
                 query.orWhere { Courses.id eq it }
             }
