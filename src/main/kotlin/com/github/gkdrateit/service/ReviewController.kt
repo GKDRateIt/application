@@ -1,16 +1,13 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.Review
-import com.github.gkdrateit.database.Reviews
-import com.github.gkdrateit.database.User
-import com.github.gkdrateit.database.Users
+import com.github.gkdrateit.database.*
 import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.innerJoin
-import org.jetbrains.exposed.sql.orWhere
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -78,18 +75,31 @@ class ReviewController : CrudApiBase() {
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val query = Reviews.select { Reviews.id eq -1 }
+        val query = Reviews.selectAll()
         ctx.formParamAsNullable<Int>("courseId")?.let {
-            query.orWhere { Reviews.courseId eq it }
+            query.andWhere { Reviews.courseId eq it }
         }
         ctx.formParamAsNullable<Int>("userId")?.let {
-            query.orWhere { Reviews.userId eq it }
+            query.andWhere { Reviews.userId eq it }
+        }
+        ctx.formParam("courseCode")?.let {
+            query
+                .adjustColumnSet { innerJoin(Courses, { Reviews.courseId }, { Courses.id }) }
+                .adjustSlice { slice(fields + Courses.columns) }
+                .andWhere {
+                    Courses.code eq it
+                }
+            ctx.formParam("courseCodeSeq")?.let {
+                query.andWhere {
+                    Courses.codeSeq eq it
+                }
+            }
         }
         ctx.formParam("email")?.let {
             query
                 .adjustColumnSet { innerJoin(Users, { Reviews.userId }, { Users.id }) }
                 .adjustSlice { slice(fields + Users.columns) }
-                .orWhere {
+                .andWhere {
                     Users.email eq it
                 }
         }

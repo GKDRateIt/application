@@ -4,6 +4,7 @@ import com.github.gkdrateit.database.*
 import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
+import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.orWhere
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -53,33 +54,33 @@ class CourseController :
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
         val result = mutableListOf<CourseModel>()
         try {
-            val query = Courses.select { Courses.status eq -1 }
+            val query = Courses.select { Courses.status eq 1 }
             ctx.formParamAsNullable<Int>("courseId")?.let {
-                query.orWhere { Courses.id eq it }
+                query.andWhere { Courses.id eq it }
             }
             ctx.formParam("code")?.let {
-                query.orWhere { Courses.code eq it }
+                query.andWhere { Courses.code eq it }
             }
             ctx.formParam("codeSeq")?.let {
-                query.orWhere { Courses.codeSeq eq it }
+                query.andWhere { Courses.codeSeq eq it }
             }
             ctx.formParam("name")?.let {
-                query.orWhere { Courses.name.upperCase() like "$it%".uppercase() }
+                query.andWhere { Courses.name.upperCase() like "$it%".uppercase() }
             }
             ctx.formParamAsNullable<Int>("teacherId")?.let {
-                query.orWhere { Courses.teacherId eq it }
+                query.andWhere { Courses.teacherId eq it }
             }
             ctx.formParam("semester")?.let {
-                query.orWhere { Courses.semester eq it }
+                query.andWhere { Courses.semester eq it }
             }
             ctx.formParamAsNullable<Double>("credit")?.let {
-                query.orWhere { Courses.credit eq it.toBigDecimal() }
+                query.andWhere { Courses.credit eq it.toBigDecimal() }
             }
             ctx.formParamAsNullable<Int>("degree")?.let {
-                query.orWhere { Courses.degree eq it }
+                query.andWhere { Courses.degree eq it }
             }
             ctx.formParam("category")?.let {
-                query.orWhere { Courses.category eq it }
+                query.andWhere { Courses.category eq it }
             }
             val totalCount = transaction { query.count() }
             val pagination = getPaginationInfoOrDefault(ctx)
