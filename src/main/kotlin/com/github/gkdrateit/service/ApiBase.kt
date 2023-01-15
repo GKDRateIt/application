@@ -61,7 +61,7 @@ abstract class ApiBase {
 
     companion object {
         const val DEFAULT_OFFSET: Long = 0
-        const val DEFAULT_COUNT: Int = 5
+        const val DEFAULT_COUNT: Int = 20
     }
 
 
