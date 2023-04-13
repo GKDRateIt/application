@@ -21,7 +21,6 @@ class ReviewController : CrudApiBase() {
     override fun handleCreate(ctx: Context): ApiResponse<String> {
         arrayOf(
             "courseId",
-//            "userId",
             "createTime",
             "lastUpdateTime",
             "overallRecommendation",

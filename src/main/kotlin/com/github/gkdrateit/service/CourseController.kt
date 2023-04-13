@@ -5,7 +5,6 @@ import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
 import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.orWhere
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.upperCase
@@ -97,7 +96,9 @@ class CourseController :
                     Teacher.find { Teachers.name.upperCase() like "$it%".uppercase() }.map { it.toModel() }
                 }.forEach {
                     transaction {
-                        Course.find { Courses.teacherId eq it.teacherId }.map { it.toModel() }
+                        Course
+                            .find { Courses.teacherId eq it.teacherId }
+                            .map { it.toModel() }
                     }.let {
                         result.addAll(it)
                     }

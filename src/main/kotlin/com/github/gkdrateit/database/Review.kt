@@ -8,14 +8,11 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
-//@Serializable
 data class ReviewModel(
     val reviewId: Int,
     val courseId: Int,
     val userId: Int,
-//    @Serializable(with = LocalDateTimeSerializer::class)
     val createTime: LocalDateTime,
-//    @Serializable(with = LocalDateTimeSerializer::class)
     val lastUpdateTime: LocalDateTime,
     val overallRecommendation: Int,
     val quality: Int,
@@ -26,6 +23,7 @@ data class ReviewModel(
     val myMajor: Int?,
     val userName: String?,
 )
+
 
 object Reviews : IntIdTable(columnName = "r_review_id") {
     val courseId = integer("r_course_id").references(Courses.id)
@@ -39,6 +37,7 @@ object Reviews : IntIdTable(columnName = "r_review_id") {
     val commentText = text("r_comment_text")
     val myGrade = varchar("r_my_grade", 10).nullable()
     val myMajor = integer("r_my_major").nullable()
+
 }
 
 class Review(id: EntityID<Int>) : IntEntity(id) {
