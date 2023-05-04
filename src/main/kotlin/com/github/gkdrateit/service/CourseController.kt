@@ -1,13 +1,16 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.*
+import com.github.gkdrateit.database.Course
+import com.github.gkdrateit.database.CourseModel
+import com.github.gkdrateit.database.Courses
+import com.github.gkdrateit.database.Teachers
 import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
-import org.jetbrains.exposed.sql.orWhere
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.upperCase
 
 class CourseController :
     CrudApiBase() {
@@ -51,35 +54,41 @@ class CourseController :
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val result = mutableListOf<CourseModel>()
+        val result = mutableSetOf<CourseModel>()
         try {
             val query = Courses.select { Courses.status eq 1 }
             ctx.formParamAsNullable<Int>("courseId")?.let {
-                query.orWhere { Courses.id eq it }
+                query.andWhere { Courses.id eq it }
             }
             ctx.formParam("code")?.let {
-                query.orWhere { Courses.code eq it }
+                query.andWhere { Courses.code eq it }
             }
             ctx.formParam("codeSeq")?.let {
-                query.orWhere { Courses.codeSeq eq it }
+                query.andWhere { Courses.codeSeq eq it }
             }
             ctx.formParam("name")?.let {
-                query.orWhere { Courses.name.upperCase() like "$it%".uppercase() }
+                query.andWhere { Courses.name like "%$it%" }
             }
             ctx.formParamAsNullable<Int>("teacherId")?.let {
-                query.orWhere { Courses.teacherId eq it }
+                query.andWhere { Courses.teacherId eq it }
             }
             ctx.formParam("semester")?.let {
-                query.orWhere { Courses.semester eq it }
+                query.andWhere { Courses.semester eq it }
             }
             ctx.formParamAsNullable<Double>("credit")?.let {
-                query.orWhere { Courses.credit eq it.toBigDecimal() }
+                query.andWhere { Courses.credit eq it.toBigDecimal() }
             }
             ctx.formParamAsNullable<Int>("degree")?.let {
-                query.orWhere { Courses.degree eq it }
+                query.andWhere { Courses.degree eq it }
             }
             ctx.formParam("category")?.let {
-                query.orWhere { Courses.category eq it }
+                query.andWhere { Courses.category eq it }
+            }
+            ctx.formParam("teacherName")?.let {
+                query
+                    .adjustColumnSet { innerJoin(Teachers, { Courses.id }, { Teachers.id }) }
+                    .adjustSlice { slice(fields + Teachers.columns) }
+                    .andWhere { Teachers.name like "%$it%" }
             }
             val totalCount = transaction { query.count() }
             val pagination = getPaginationInfoOrDefault(ctx)
@@ -91,18 +100,7 @@ class CourseController :
             }.let {
                 result.addAll(it)
             }
-            ctx.formParam("teacherName")?.let {
-                transaction {
-                    Teacher.find { Teachers.name.upperCase() like "$it%".uppercase() }.map { it.toModel() }
-                }.forEach {
-                    transaction {
-                        Course.find { Courses.teacherId eq it.teacherId }.map { it.toModel() }
-                    }.let {
-                        result.addAll(it)
-                    }
-                }
-            }
-            return successReply(result, totalCount, pagination)
+            return successReply(result.toList(), totalCount, pagination)
         } catch (e: Throwable) {
             return databaseError(e.message ?: "")
         }

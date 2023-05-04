@@ -36,4 +36,5 @@ object RateItConfig {
     val databaseDriver: String = run { configJson["databaseDriver"]!! as String }
     val databaseUser: String = run { configJson["databaseUser"]!! as String }
     val databasePassword: String = run { configJson["databasePassword"]!! as String }
+    val refreshAvgView: Boolean = run { configJson["refreshAvgView"]!! as Boolean }
 }

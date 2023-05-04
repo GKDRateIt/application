@@ -8,5 +8,6 @@
   "databaseURL": "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
   "databaseDriver": "org.h2.Driver",
   "databaseUser": "sa",
-  "databasePassword": ""
+  "databasePassword": "",
+  "refreshAvgView": false
 }

@@ -61,7 +61,7 @@ abstract class ApiBase {
 
     companion object {
         const val DEFAULT_OFFSET: Long = 0
-        const val DEFAULT_COUNT: Int = 5
+        const val DEFAULT_COUNT: Int = 20
     }
 
 
@@ -185,8 +185,8 @@ abstract class ApiBase {
     }
 
     fun getPaginationInfoOrDefault(ctx: Context): PaginationInfo {
-        val offset = ctx.formParamAsNullable("offset") ?: DEFAULT_OFFSET
-        val limit = ctx.formParamAsNullable("limit") ?: DEFAULT_COUNT
+        val offset = ctx.formParamAsNullable("pageOffset") ?: DEFAULT_OFFSET
+        val limit = ctx.formParamAsNullable("pageLimit") ?: DEFAULT_COUNT
         return PaginationInfo(offset, limit)
     }
 }

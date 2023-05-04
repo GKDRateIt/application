@@ -9,10 +9,10 @@ sealed class Role {
 
     companion object {
         fun getRole(roleName: String): Role {
-            return when (roleName) {
-                "Default" -> Default
-                "Member" -> Member
-                "Admin" -> Admin
+            return when (roleName.lowercase()) {
+                "default" -> Default
+                "member" -> Member
+                "admin" -> Admin
                 else -> throw Exception("No such role")
             }
         }
