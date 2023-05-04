@@ -42,8 +42,8 @@ class TeacherController : CrudApiBase() {
         ctx.formParamAsNullable<Int>("teacherId")?.let {
             query.andWhere { Teachers.id eq it }
         }
-        ctx.formParam("name")?.let {
-            query.andWhere { Teachers.name like "$it%" }
+        ctx.formParam("teacherName")?.let {
+            query.andWhere { Teachers.name like "%$it%" }
         }
         val totalCount = transaction { query.count() }
         val pagination = getPaginationInfoOrDefault(ctx)

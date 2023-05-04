@@ -1,13 +1,16 @@
 package com.github.gkdrateit.service
 
-import com.github.gkdrateit.database.*
+import com.github.gkdrateit.database.Course
+import com.github.gkdrateit.database.CourseModel
+import com.github.gkdrateit.database.Courses
+import com.github.gkdrateit.database.Teachers
 import com.github.gkdrateit.permission.Permission
 import io.javalin.http.Context
 import io.javalin.http.formParamAsClass
 import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.upperCase
 
 class CourseController :
     CrudApiBase() {
@@ -51,7 +54,7 @@ class CourseController :
     }
 
     override fun handleRead(ctx: Context): ApiResponse<out Any> {
-        val result = mutableListOf<CourseModel>()
+        val result = mutableSetOf<CourseModel>()
         try {
             val query = Courses.select { Courses.status eq 1 }
             ctx.formParamAsNullable<Int>("courseId")?.let {
@@ -64,7 +67,7 @@ class CourseController :
                 query.andWhere { Courses.codeSeq eq it }
             }
             ctx.formParam("name")?.let {
-                query.andWhere { Courses.name.upperCase() like "$it%".uppercase() }
+                query.andWhere { Courses.name like "%$it%" }
             }
             ctx.formParamAsNullable<Int>("teacherId")?.let {
                 query.andWhere { Courses.teacherId eq it }
@@ -81,6 +84,12 @@ class CourseController :
             ctx.formParam("category")?.let {
                 query.andWhere { Courses.category eq it }
             }
+            ctx.formParam("teacherName")?.let {
+                query
+                    .adjustColumnSet { innerJoin(Teachers, { Courses.id }, { Teachers.id }) }
+                    .adjustSlice { slice(fields + Teachers.columns) }
+                    .andWhere { Teachers.name like "%$it%" }
+            }
             val totalCount = transaction { query.count() }
             val pagination = getPaginationInfoOrDefault(ctx)
             query.limit(pagination.limit, pagination.offset)
@@ -91,20 +100,7 @@ class CourseController :
             }.let {
                 result.addAll(it)
             }
-            ctx.formParam("teacherName")?.let {
-                transaction {
-                    Teacher.find { Teachers.name.upperCase() like "$it%".uppercase() }.map { it.toModel() }
-                }.forEach {
-                    transaction {
-                        Course
-                            .find { Courses.teacherId eq it.teacherId }
-                            .map { it.toModel() }
-                    }.let {
-                        result.addAll(it)
-                    }
-                }
-            }
-            return successReply(result, totalCount, pagination)
+            return successReply(result.toList(), totalCount, pagination)
         } catch (e: Throwable) {
             return databaseError(e.message ?: "")
         }
