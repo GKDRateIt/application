@@ -1,9 +1,11 @@
 package com.github.gkdrateit.database
 
+import com.github.gkdrateit.config.RateItConfig
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import kotlin.concurrent.schedule
 
@@ -35,7 +37,7 @@ data class CourseSlimModel(
     override val submitUserId: Int
 ) : ICourseSlimModel {
     fun addRatingInfo(): CourseModel {
-        return "SELECT * FROM AvgRating WHERE r_course_id = $courseId".execAndMap {
+        val res = "SELECT * FROM AvgRating WHERE r_course_id = $courseId".execAndMap {
             CourseModel(
                 this,
                 it.getInt("r_avg_overall_rec"),
@@ -43,7 +45,14 @@ data class CourseSlimModel(
                 it.getInt("r_avg_rate_quality"),
                 it.getInt("r_avg_rate_workload")
             )
-        }[0]
+        }
+        if (res.isEmpty()) {
+            // No review yet!
+            return CourseModel(
+                this, 0, 0, 0, 0
+            )
+        }
+        return res[0]
     }
 }
 
@@ -72,7 +81,11 @@ object Courses : IntIdTable(columnName = "c_course_id") {
     }
 
     private val refreshTask = dbTimer.schedule(0, 1000 * 60 * 10) {
-        "REFRESH MATERIALIZED VIEW AvgRating".exec()
+        if (RateItConfig.refreshAvgView) {
+            transaction {
+                "REFRESH MATERIALIZED VIEW AvgRating".exec()
+            }
+        }
     }
 }
 
